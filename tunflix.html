@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUNFLIX - Streaming Premium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;family=Bebas+Neue&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f0f0f;
+            color: #e5e5e5;
+            overflow-x: hidden;
+        }
+        
+        .brand-font {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f0f0f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #e50914;
+        }
+        
+        .video-card {
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform-origin: center;
+        }
+        
+        .video-card:hover {
+            transform: scale(1.08);
+            z-index: 50;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.9);
+        }
+        
+        .video-card:hover .play-overlay {
+            opacity: 1;
+        }
+        
+        .video-card:hover .video-info {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(to top, #0f0f0f 0%, transparent 60%, rgba(0,0,0,0.8) 100%);
+        }
+        
+        .card-gradient {
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .modal-enter {
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .nav-blur {
+            backdrop-filter: blur(20px);
+            background: rgba(15, 15, 15, 0.95);
+        }
+        
+        .btn-netflix {
+            background-color: #e50914;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-netflix:hover {
+            background-color: #f40612;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(229, 9, 20, 0.4);
+        }
+        
+        .collection-badge {
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .collection-row {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .collection-row::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--collection-color, #e50914);
+        }
+        
+        .title-clamp {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.3;
+        }
+        
+        /* Search Bar Animation */
+        .search-container {
+            transition: all 0.3s ease;
+        }
+        
+        .search-input {
+            width: 0;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .search-container.active .search-input {
+            width: 250px;
+            opacity: 1;
+        }
+        
+        .search-container.active {
+            background: rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        /* Profile Dropdown */
+        .profile-dropdown {
+            transform: translateY(-10px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+        
+        .profile-container:hover .profile-dropdown {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* No results */
+        .no-results {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+        }
+
+        /* Snapchat Footer Link */
+        .snapchat-footer-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 12px 32px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            margin: 20px auto;
+            backdrop-filter: blur(10px);
+            width: fit-content;
+        }
+        
+        .snapchat-footer-link:hover {
+            background: #fffc00;
+            border-color: #fffc00;
+            color: black;
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px -5px rgba(255, 252, 0, 0.4);
+        }
+        
+        .snapchat-footer-link:hover svg {
+            filter: brightness(0);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <script>
+        // Vérifier si l'utilisateur est authentifié
+        if (localStorage.getItem('tunflix_auth') !== 'true') {
+            window.location.href = 'index.html';
+        }
+
+        // Fonction de déconnexion
+        function logout() {
+            localStorage.removeItem('tunflix_auth');
+            window.location.href = 'index.html';
+        }
+    </script>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed w-full z-50 transition-all duration-500 py-4 px-4 md:px-12 flex items-center justify-between nav-blur">
+        <div class="flex items-center gap-8">
+            <h1 class="brand-font text-3xl md:text-4xl text-red-600 font-bold cursor-pointer hover:text-red-500 transition-colors" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                TUNFLIX
+            </h1>
+            <div class="hidden md:flex gap-6 text-sm font-medium">
+                <a href="#" onclick="showAllCollections()" class="hover:text-gray-300 transition-colors">Accueil</a>
+                <a href="#collections-container" class="hover:text-gray-300 transition-colors">Collections</a>
+                <a href="#" onclick="scrollToSection('all-videos')" class="hover:text-gray-300 transition-colors">Tout</a>
+                <a href="#" class="hover:text-gray-300 transition-colors">Nouveautés</a>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <!-- Search Bar -->
+            <div class="search-container flex items-center bg-black/40 rounded-full px-3 py-2 border border-transparent hover:border-gray-600 transition-all" id="search-container">
+                <button onclick="toggleSearch()" class="p-1 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </button>
+                <input type="text" id="search-input" class="search-input bg-transparent border-none outline-none text-white placeholder-gray-400 ml-2 text-sm" placeholder="Titres, collections..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Escape')closeSearch()">
+                <button onclick="clearSearch()" id="clear-search" class="hidden p-1 hover:text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Notifications -->
+            <button class="p-2 hover:bg-white/10 rounded-full transition-colors relative">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                <span class="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full"></span>
+            </button>
+
+            <!-- Profile Menu with Logout Functionality -->
+            <div class="profile-container relative">
+                <button class="flex items-center gap-2 group" onclick="toggleProfile()">
+                    <div class="w-8 h-8 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center text-xs font-bold border-2 border-transparent group-hover:border-white transition-all">
+                        TU
+                    </div>
+                    <svg class="w-4 h-4 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown absolute right-0 top-full mt-2 w-56 bg-black/95 border border-gray-700 rounded-lg shadow-2xl py-2 backdrop-blur-md z-50">
+                    <div class="px-4 py-3 border-b border-gray-800">
+                        <p class="font-bold text-white">Membre Premium</p>
+                        <p class="text-xs text-gray-400">Accès illimité</p>
+                    </div>
+                    <a href="#" class="block px-4 py-2 hover:bg-white/10 transition-colors text-sm flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        Mon profil
+                    </a>
+                    <a href="#" class="block px-4 py-2 hover:bg-white/10 transition-colors text-sm flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Paramètres
+                    </a>
+                    <a href="#" class="block px-4 py-2 hover:bg-white/10 transition-colors text-sm flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        Confidentialité
+                    </a>
+                    <div class="border-t border-gray-800 mt-2 pt-2">
+                        <a href="#" onclick="logout()" class="block px-4 py-2 hover:bg-white/10 transition-colors text-sm text-red-400 hover:text-red-300 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                            Déconnexion
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative h-[85vh] w-full overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10"></div>
+        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2525&auto=format&fit=crop')] bg-cover bg-center"></div>
+        <div class="hero-gradient absolute inset-0 z-10"></div>
+        
+        <div class="relative z-20 h-full flex flex-col justify-center px-4 md:px-12 max-w-4xl">
+            <div class="flex items-center gap-3 mb-4">
+                <span class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-3 py-1 rounded text-xs font-black uppercase tracking-wider shadow-lg">Top 10</span>
+                <span class="text-red-500 font-bold tracking-widest text-sm uppercase">Aujourd'hui</span>
+            </div>
+            <h2 class="brand-font text-6xl md:text-8xl lg:text-9xl mb-6 leading-none text-white drop-shadow-2xl">
+                STREAMING<br>PREMIUM
+            </h2>
+            <p class="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl leading-relaxed drop-shadow-lg">
+                Découvrez des collections exclusives, des séries complètes et des films en HD. 
+                Recherchez parmi toutes nos vidéos disponibles.
+            </p>
+            <div class="flex gap-4 flex-wrap">
+                <button onclick="scrollToSection('collections-container')" class="btn-netflix px-8 py-4 rounded-md font-bold text-lg flex items-center gap-2 hover:scale-105 transition-transform">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
+                    Explorer
+                </button>
+                <button onclick="toggleSearch(); document.getElementById('search-input').focus()" class="bg-gray-600/40 hover:bg-gray-600/60 backdrop-blur-md px-8 py-4 rounded-md font-bold text-lg flex items-center gap-2 transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    Rechercher
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search Results Container (Hidden by default) -->
+    <div id="search-results-container" class="hidden px-4 md:px-12 py-8">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-bold text-white">
+                Résultats de recherche: <span id="search-query" class="text-red-500"></span>
+                <span class="text-gray-500 text-lg ml-2" id="search-count"></span>
+            </h3>
+            <button onclick="clearSearch()" class="text-sm text-gray-400 hover:text-white transition-colors">
+                Effacer la recherche
+            </button>
+        </div>
+        <div id="search-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"></div>
+        <div id="no-results" class="hidden no-results rounded-2xl p-12 text-center">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <p class="text-xl text-gray-400 mb-2">Aucun résultat trouvé</p>
+            <p class="text-gray-600">Essayez avec d'autres mots-clés</p>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="px-4 md:px-12 py-12">
+        <div class="h-8 w-64 shimmer rounded mb-8"></div>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div class="aspect-video shimmer rounded-lg"></div>
+            <div class="aspect-video shimmer rounded-lg"></div>
+            <div class="aspect-video shimmer rounded-lg"></div>
+            <div class="aspect-video shimmer rounded-lg"></div>
+            <div class="aspect-video shimmer rounded-lg hidden lg:block"></div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="content" class="hidden space-y-16 pb-20">
+        
+        <!-- Auto-detected Collections -->
+        <div id="collections-container" class="space-y-12">
+            <!-- Collections will be injected here dynamically -->
+        </div>
+
+        <!-- All Videos Section -->
+        <section id="all-videos" class="px-4 md:px-12">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl md:text-2xl font-bold text-white hover:text-red-600 transition-colors cursor-pointer flex items-center gap-2">
+                    Toutes les vidéos
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </h3>
+                <span class="text-gray-500 text-sm" id="total-count"></span>
+            </div>
+            <div id="all-videos-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"></div>
+        </section>
+
+    </main>
+
+    <!-- Video Modal -->
+    <div id="video-modal" class="fixed inset-0 z-[100] hidden bg-black/95 backdrop-blur-sm overflow-y-auto">
+        <div class="min-h-screen flex items-center justify-center p-4">
+            <div class="modal-enter w-full max-w-6xl bg-[#181818] rounded-2xl overflow-hidden shadow-2xl border border-gray-800">
+                <div class="relative aspect-video bg-black group">
+                    <iframe id="modal-iframe" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                    <button onclick="closeModal()" class="absolute top-4 right-4 w-10 h-10 bg-black/60 hover:bg-black/90 rounded-full flex items-center justify-center transition-colors z-10 border border-white/20">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <div id="modal-collection-badge" class="absolute top-4 left-4 px-3 py-1 rounded text-xs font-bold hidden" style="background: var(--badge-color, #e50914); color: white;">
+                        COLLECTION
+                    </div>
+                </div>
+                
+                <div class="p-6 md:p-8">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-4 text-sm text-gray-400 flex-wrap">
+                                <span class="text-green-400 font-bold text-base">98% Match</span>
+                                <span class="border border-gray-600 px-1 rounded text-xs">HD</span>
+                                <span class="border border-gray-600 px-1 rounded text-xs">5.1</span>
+                                <span id="modal-meta" class="font-semibold"></span>
+                            </div>
+                            <h2 id="modal-title" class="text-3xl md:text-4xl font-bold mb-4 text-white">Titre</h2>
+                            <p class="text-gray-300 leading-relaxed mb-6 text-lg">
+                                Profitez de cette vidéo en haute qualité. Streaming optimisé pour la meilleure expérience visuelle.
+                            </p>
+                            <div class="flex gap-4 flex-wrap">
+                                <button onclick="replayVideo()" class="btn-netflix px-8 py-3 rounded-md font-bold flex items-center gap-2 hover:scale-105 transition-transform">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
+                                    Lecture
+                                </button>
+                                <button class="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-md font-bold flex items-center gap-2 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    Ma Liste
+                                </button>
+                                <button onclick="shareVideo()" class="border border-gray-600 hover:bg-white/10 px-6 py-3 rounded-md font-bold flex items-center gap-2 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                                    Partager
+                                </button>
+                            </div>
+                        </div>
+                        <div class="md:w-1/3 space-y-4 text-sm bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+                            <div>
+                                <span class="text-gray-500 block mb-1">Titre original:</span>
+                                <span id="modal-original-title" class="text-white font-semibold text-lg"></span>
+                            </div>
+                            <div id="modal-collection-name" class="hidden">
+                                <span class="text-gray-500 block mb-1">Collection:</span>
+                                <span class="text-white font-semibold" id="modal-collection-text"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block mb-1">Genres:</span>
+                                <span class="text-gray-300">Drame, Comédie, Tunisien</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block mb-1">Qualité:</span>
+                                <span class="text-gray-300">HD 1080p • Stereo 2.0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer with Snapchat Link in the middle -->
+    <footer class="mt-20 px-4 md:px-12 py-12 border-t border-gray-800 text-gray-500 text-sm bg-black">
+        <div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+            <div class="space-y-3">
+                <p class="hover:text-white transition-colors cursor-pointer">Audio Description</p>
+                <p class="hover:text-white transition-colors cursor-pointer">Relations Investisseurs</p>
+                <p class="hover:text-white transition-colors cursor-pointer">Informations légales</p>
+            </div>
+            <div class="space-y-3">
+                <p class="hover:text-white transition-colors cursor-pointer">Centre d'aide</p>
+                <p class="hover:text-white transition-colors cursor-pointer">Recrutement</p>
+                <p class="hover:text-white transition-colors cursor-pointer">Préférences de cookies</p>
+            </div>
+            <div class="space-y-3">
+                <p class="hover:text-white transition-colors cursor-pointer">Cartes cadeaux</p>
+                <p class="hover:text-white transition-colors cursor-pointer">Conditions d'utilisation</p>
+                <p class="hover:text-white transition-colors cursor-pointer">Mentions légales</p>
+            </div>
+            <div class="space-y-3">
+                <p class="hover:text-white transition-colors cursor-pointer">Presse</p>
+                <p class="hover:text-white transition-colors cursor-pointer">Confidentialité</p>
+                <p class="hover:text-white transition-colors cursor-pointer">Nous contacter</p>
+            </div>
+        </div>
+        
+        <!-- Snapchat Link Centered -->
+        <div class="flex justify-center mb-8">
+            <a href="https://www.snapchat.com/add/h7_06200?share_id=u_T56Mv5TmOcaZ8QpB6lZw&locale=fr_FR" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               class="snapchat-footer-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12.206 22.924c-.423 0-.815-.029-1.178-.086-.223-.036-.468-.122-.639-.168a3.13 3.13 0 0 0-.418-.088c-.327-.038-.643.008-.969.082-.416.096-.824.274-1.244.313-.707.066-1.378-.123-1.97-.521-.416-.279-.745-.648-1.008-1.06-.305-.478-.51-1.006-.642-1.557-.096-.404-.12-.82-.175-1.231-.035-.262-.11-.516-.199-.765-.242-.684-.705-1.163-1.348-1.521-.785-.435-1.667-.585-2.55-.439-.291.048-.572.12-.853.122-.334.002-.586-.125-.734-.396-.165-.299-.103-.623.145-.945.304-.393.703-.692 1.143-.926.844-.447 1.765-.714 2.682-.924.446-.102.559-.181.65-.617.036-.177.051-.358.077-.537.152-1.079.097-2.122-.34-3.147-.647-1.519-2.087-2.499-3.78-2.49-.496.003-.977.1-1.43.271-.551.209-1.022.509-1.362.93-.259.321-.336.682-.177.986.148.282.464.441.891.441.244 0 .505-.055.759-.126.623-.174 1.004-.063 1.245.315.205.322.178.73-.044 1.089-.223.362-.527.649-.903.874-.763.455-1.609.72-2.472.882-.32.06-.525.324-.527.604-.005.707.148 1.358.479 1.953.567 1.018 1.466 1.691 2.67 1.954.168.036.336.064.506.097.014.003.028.015.048.03.162.122.084.314.073.497-.024.445-.108.88-.258 1.301-.207.582-.493 1.126-.829 1.64-.272.414-.596.786-.974 1.102-.315.264-.66.476-1.036.631-.583.238-1.178.38-1.798.45-.406.045-.826.019-1.234-.032-.269-.034-.462-.226-.462-.464 0-.096.037-.194.103-.277.202-.252.49-.395.813-.449.336-.056.683-.008 1.022.07.257.06.515.142.777.149.459.011.789-.274.773-.646-.006-.131-.051-.263-.143-.378-.19-.235-.522-.334-.884-.341-.304-.006-.61.065-.907.171-.276.099-.539.231-.81.315-.357.111-.714.149-1.023.053-.339-.105-.547-.399-.529-.732.017-.307.257-.556.584-.664.449-.149.907-.245 1.365-.329.896-.165 1.787-.35 2.638-.655.297-.106.59-.223.865-.367.74-.389 1.223-.941 1.419-1.762.087-.367.09-.743.068-1.118-.019-.311.017-.625.07-.934.061-.36.159-.711.277-1.055.157-.459.372-.898.613-1.319.097-.168.206-.332.299-.504.036-.065.014-.137-.018-.215-.119-.283-.375-.425-.727-.45-.344-.024-.654.117-.967.266-.431.204-.828.468-1.228.73-.184.12-.381.221-.567.332-.144.087-.292.151-.454.191-.188.047-.353-.036-.427-.18-.074-.141-.035-.314.071-.474.155-.233.359-.42.582-.588.589-.441 1.229-.797 1.934-1.026.419-.136.851-.229 1.291-.285.553-.071 1.102-.054 1.649.043.701.125 1.352.402 1.946.797.323.215.622.464.902.73.183.175.355.36.519.552.248.291.459.606.628.942.371.736.558 1.506.566 2.318.012 1.236-.274 2.406-1.029 3.438-.165.225-.358.431-.539.644-.115.136-.236.269-.323.425-.199.358-.072.723.137.952.218.237.56.34.916.32.379-.021.734-.159 1.079-.302.592-.245 1.165-.537 1.708-.874.385-.238.754-.501 1.097-.792.329-.279.63-.586.892-.923.181-.234.342-.482.479-.74.098-.183.225-.352.37-.507.146-.157.367-.181.523-.061.171.132.206.389.104.63-.131.309-.317.586-.527.842-.303.366-.645.694-1.016.986-.487.383-1.014.705-1.574.959-.573.259-1.166.447-1.781.56-.426.078-.862.108-1.296.097z"/>
+                </svg>
+                <span>Rejoignez-moi sur Snapchat</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                </svg>
+            </a>
+        </div>
+
+        <div class="text-center pt-8 border-t border-gray-800">
+            <p class="brand-font text-2xl text-gray-600 mb-2">TUNFLIX</p>
+            <p>&copy; 2024 TUNFLIX. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <script>
+        const API_URL = "https://api.dailymotion.com/user/tunflix-and-chill-tv/videos";
+        let videos = [];
+        let collections = {};
+        let currentVideoId = null;
+
+        // Collection colors
+        const collectionColors = {
+            'el khotifa': '#FFD700',
+            'default': '#e50914',
+            'saison': '#00d4ff',
+            'serie': '#ff6b6b',
+            'film': '#4ecdc4'
+        };
+
+        // Smart collection detection
+        function detectCollections(videosList) {
+            const collections = {};
+            const collectionPatterns = [
+                // Pattern: Name + Number/Season
+                { regex: /^([a-zA-Z\s]+?)\s*(?:saison|season|s)?\s*(\d+).*?(?:episode|ep|e)?\s*(\d+)/i, type: 'series' },
+                { regex: /^([a-zA-Z\s]+?)\s*(\d+).*?(?:part|partie|p)?\s*(\d+)/i, type: 'series' },
+                // Pattern: El Khotifa specific
+                { regex: /(el khotifa|khoutifa|خطيفة)/i, type: 'elkhotifa' },
+                // Pattern: Generic "Serie Name - Episode X"
+                { regex: /^([a-zA-Z\s]+?)[\s\-:]+(?:episode|ep|épiode)\s*(\d+)/i, type: 'series' }
+            ];
+
+            videosList.forEach(video => {
+                const title = video.title.toLowerCase();
+                let matched = false;
+
+                // Check for El Khotifa first (special handling)
+                if (title.includes('khotifa') || title.includes('khoutifa') || title.includes('خطيفة')) {
+                    if (!collections['El Khotifa']) {
+                        collections['El Khotifa'] = { videos: [], color: '#FFD700', type: 'special' };
+                    }
+                    collections['El Khotifa'].videos.push(video);
+                    video.collection = 'El Khotifa';
+                    matched = true;
+                }
+
+                // Check for other patterns if not matched
+                if (!matched) {
+                    for (let pattern of collectionPatterns) {
+                        const match = video.title.match(pattern.regex);
+                        if (match && match[1]) {
+                            const collectionName = match[1].trim();
+                            // Only create collection if name is meaningful (>3 chars) and not just numbers
+                            if (collectionName.length > 3 && !/^\d+$/.test(collectionName)) {
+                                const cleanName = collectionName.charAt(0).toUpperCase() + collectionName.slice(1);
+                                if (!collections[cleanName]) {
+                                    collections[cleanName] = { 
+                                        videos: [], 
+                                        color: Object.values(collectionColors)[Object.keys(collections).length % Object.keys(collectionColors).length],
+                                        type: pattern.type 
+                                    };
+                                }
+                                collections[cleanName].videos.push(video);
+                                video.collection = cleanName;
+                                matched = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // Group by similar titles (fuzzy matching for remaining)
+                if (!matched) {
+                    // Extract potential series name (remove episode numbers, dates, etc.)
+                    const cleanTitle = video.title
+                        .replace(/(?:saison|season|s)?\s*\d+/gi, '')
+                        .replace(/(?:episode|ep|e)?\s*\d+/gi, '')
+                        .replace(/[^\w\s]/gi, '')
+                        .trim();
+                    
+                    if (cleanTitle.length > 5) {
+                        // Check if similar to existing collection
+                        let foundSimilar = false;
+                        for (let [name, data] of Object.entries(collections)) {
+                            const similarity = calculateSimilarity(cleanTitle.toLowerCase(), name.toLowerCase());
+                            if (similarity > 0.6) {
+                                data.videos.push(video);
+                                video.collection = name;
+                                foundSimilar = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!foundSimilar && cleanTitle.length > 3) {
+                            const newName = cleanTitle.split(' ').slice(0, 3).join(' '); // First 3 words
+                            if (!collections[newName]) {
+                                collections[newName] = { 
+                                    videos: [], 
+                                    color: '#9b59b6',
+                                    type: 'auto' 
+                                };
+                            }
+                            collections[newName].videos.push(video);
+                            video.collection = newName;
+                        }
+                    }
+                }
+            });
+
+            // Filter collections with less than 2 videos (unless it's El Khotifa)
+            const filteredCollections = {};
+            for (let [name, data] of Object.entries(collections)) {
+                if (data.videos.length >= 2 || name === 'El Khotifa') {
+                    filteredCollections[name] = data;
+                } else {
+                    // Remove collection tag from videos that don't form a collection
+                    data.videos.forEach(v => delete v.collection);
+                }
+            }
+
+            return filteredCollections;
+        }
+
+        function calculateSimilarity(str1, str2) {
+            const longer = str1.length > str2.length ? str1 : str2;
+            const shorter = str1.length > str2.length ? str2 : str1;
+            if (longer.length === 0) return 1.0;
+            const distance = levenshteinDistance(longer, shorter);
+            return (longer.length - distance) / longer.length;
+        }
+
+        function levenshteinDistance(str1, str2) {
+            const matrix = [];
+            for (let i = 0; i <= str2.length; i++) matrix[i] = [i];
+            for (let j = 0; j <= str1.length; j++) matrix[0][j] = j;
+            for (let i = 1; i <= str2.length; i++) {
+                for (let j = 1; j <= str1.length; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+                        );
+                    }
+                }
+            }
+            return matrix[str2.length][str1.length];
+        }
+
+        // Search functionality
+        function toggleSearch() {
+            const container = document.getElementById('search-container');
+            const input = document.getElementById('search-input');
+            container.classList.toggle('active');
+            if (container.classList.contains('active')) {
+                input.focus();
+            } else {
+                clearSearch();
+            }
+        }
+
+        function closeSearch() {
+            const container = document.getElementById('search-container');
+            container.classList.remove('active');
+            clearSearch();
+        }
+
+        function handleSearch(query) {
+            const clearBtn = document.getElementById('clear-search');
+            const resultsContainer = document.getElementById('search-results-container');
+            const mainContent = document.getElementById('content');
+            
+            if (query.length > 0) {
+                clearBtn.classList.remove('hidden');
+                
+                // Filter videos
+                const filtered = videos.filter(v => 
+                    v.title.toLowerCase().includes(query.toLowerCase()) ||
+                    (v.collection && v.collection.toLowerCase().includes(query.toLowerCase()))
+                );
+                
+                displaySearchResults(filtered, query);
+                resultsContainer.classList.remove('hidden');
+                mainContent.classList.add('hidden');
+            } else {
+                clearSearch();
+            }
+        }
+
+        function displaySearchResults(results, query) {
+            const grid = document.getElementById('search-grid');
+            const noResults = document.getElementById('no-results');
+            const countSpan = document.getElementById('search-count');
+            const querySpan = document.getElementById('search-query');
+            
+            querySpan.textContent = `"${query}"`;
+            countSpan.textContent = `(${results.length})`;
+            
+            if (results.length === 0) {
+                grid.innerHTML = '';
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+                grid.innerHTML = results.map((video, index) => 
+                    createVideoCard(video, index, video.collection)
+                ).join('');
+            }
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('clear-search').classList.add('hidden');
+            document.getElementById('search-results-container').classList.add('hidden');
+            document.getElementById('content').classList.remove('hidden');
+            document.getElementById('search-container').classList.remove('active');
+        }
+
+        // Profile toggle (for mobile)
+        function toggleProfile() {
+            // Dropdown is CSS hover-based, this is for mobile click handling if needed
+        }
+
+        // Fetch and organize videos
+        async function fetchVideos() {
+            try {
+                let allVideos = [];
+                let page = 1;
+                const maxPages = 10;
+
+                while (page <= maxPages) {
+                    const url = `${API_URL}?fields=id,title,url,thumbnail_480_url,created_time&limit=100&page=${page}`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    if (!data.list || data.list.length === 0) break;
+                    
+                    allVideos = allVideos.concat(data.list);
+                    if (!data.has_more) break;
+                    page++;
+                }
+
+                videos = allVideos.sort((a, b) => new Date(b.created_time) - new Date(a.created_time));
+                
+                // Detect collections automatically
+                collections = detectCollections(videos);
+                
+                renderAll();
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('content').classList.remove('hidden');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div class="text-center py-12">
+                        <p class="text-red-500 text-xl mb-4">Erreur de chargement</p>
+                        <button onclick="fetchVideos()" class="px-6 py-3 bg-red-600 rounded-lg hover:bg-red-700 transition-colors font-bold">
+                            Réessayer
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function renderAll() {
+            // Render collections
+            const collectionsContainer = document.getElementById('collections-container');
+            const sortedCollections = Object.entries(collections).sort((a, b) => b[1].videos.length - a[1].videos.length);
+            
+            collectionsContainer.innerHTML = sortedCollections.map(([name, data]) => `
+                <section class="collection-row py-6 px-4 md:px-12" style="--collection-color: ${data.color}; background: linear-gradient(90deg, ${data.color}10 0%, transparent 100%);">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+                                <span class="collection-badge px-3 py-1 rounded text-sm" style="background: ${data.color}; color: ${data.color === '#FFD700' ? '#000' : '#fff'};">
+                                    ${data.type === 'special' ? '★ ' : ''}${name}
+                                </span>
+                                <span class="text-gray-400 text-base font-normal">${data.videos.length} épisodes</span>
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                        ${data.videos.map((video, idx) => createVideoCard(video, idx, name)).join('')}
+                    </div>
+                </section>
+            `).join('');
+
+            // Render all videos
+            const allVideosGrid = document.getElementById('all-videos-grid');
+            document.getElementById('total-count').textContent = `${videos.length} vidéos`;
+            allVideosGrid.innerHTML = videos.map((video, index) => 
+                createVideoCard(video, index, video.collection)
+            ).join('');
+        }
+
+        function createVideoCard(video, index, collectionName) {
+            const epInfo = extractEpisodeInfo(video.title);
+            const displayTitle = collectionName ? 
+                video.title.replace(new RegExp(collectionName, 'gi'), '').replace(/^[\s\-:]+/, '').trim() : 
+                video.title;
+            
+            const shortTitle = displayTitle.length > 40 ? displayTitle.substring(0, 40) + '...' : displayTitle;
+            
+            return `
+                <div class="video-card relative aspect-video rounded-lg overflow-hidden cursor-pointer group bg-gray-800 shadow-lg" 
+                     onclick="openModal('${video.id}', '${escapeHtml(video.title)}', '${collectionName || ''}', '${epInfo || ''}')"
+                     style="animation: fadeIn 0.5s ease-out ${index * 0.05}s both;">
+                    
+                    <img src="${video.thumbnail_480_url}" 
+                         alt="${escapeHtml(video.title)}" 
+                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                         onerror="this.src='https://via.placeholder.com/480x270/1f1f1f/ffffff?text=${encodeURIComponent(shortTitle.substring(0,20))}'">
+                    
+                    ${collectionName ? `
+                    <div class="absolute top-2 left-2 collection-badge px-2 py-1 rounded text-[10px] z-10" 
+                         style="background: ${collections[collectionName]?.color || '#e50914'}; color: ${collections[collectionName]?.color === '#FFD700' ? '#000' : '#fff'};">
+                        ${collectionName.toUpperCase()} ${epInfo ? `• ${epInfo}` : ''}
+                    </div>
+                    ` : ''}
+                    
+                    <div class="play-overlay absolute inset-0 bg-black/30 opacity-0 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+                        <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-2xl transform scale-0 group-hover:scale-100 transition-transform duration-300 border-2 border-white/20">
+                            <svg class="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 5.84a.5.5 0 01.77-.42l8.57 5.16a.5.5 0 010 .84l-8.57 5.16a.5.5 0 01-.77-.42V5.84z"></path></svg>
+                        </div>
+                    </div>
+                    
+                    <div class="video-info absolute bottom-0 left-0 right-0 p-4 card-gradient opacity-0 transform translate-y-4 transition-all duration-300">
+                        <h4 class="font-bold text-white text-sm title-clamp mb-2 leading-tight">${escapeHtml(displayTitle || video.title)}</h4>
+                        <div class="flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2 text-gray-300">
+                                <span class="text-green-400 font-bold">${Math.floor(Math.random() * 15 + 85)}% Match</span>
+                                <span class="border border-gray-500 px-1 rounded">HD</span>
+                            </div>
+                            ${epInfo ? `<span class="text-yellow-400 font-bold">${epInfo}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function extractEpisodeInfo(title) {
+            const patterns = [
+                /s(\d+)\s*e(\d+)/i,
+                /saison\s*(\d+).*?episode\s*(\d+)/i,
+                /(\d+)x(\d+)/,
+                /épisode\s*(\d+)/i,
+                /episode\s*(\d+)/i,
+                /ep\s*(\d+)/i,
+                /part\s*(\d+)/i,
+                /partie\s*(\d+)/i
+            ];
+            
+            for (let pattern of patterns) {
+                const match = title.match(pattern);
+                if (match) {
+                    if (match[2]) return `S${match[1]}:E${match[2]}`;
+                    return `E${match[1]}`;
+                }
+            }
+            return null;
+        }
+
+        function openModal(videoId, title, collectionName, episodeInfo) {
+            currentVideoId = videoId;
+            const modal = document.getElementById('video-modal');
+            const iframe = document.getElementById('modal-iframe');
+            const titleEl = document.getElementById('modal-title');
+            const originalTitleEl = document.getElementById('modal-original-title');
+            const metaEl = document.getElementById('modal-meta');
+            const badgeEl = document.getElementById('modal-collection-badge');
+            const collectionNameEl = document.getElementById('modal-collection-name');
+            const collectionTextEl = document.getElementById('modal-collection-text');
+
+            iframe.src = `https://www.dailymotion.com/embed/video/${videoId}?autoplay=1&queue-enable=false`;
+            
+            // Clean title for display
+            const displayTitle = collectionName ? 
+                title.replace(new RegExp(collectionName, 'gi'), '').trim() : 
+                title;
+            
+            titleEl.textContent = displayTitle || title;
+            originalTitleEl.textContent = title;
+            
+            if (collectionName && collections[collectionName]) {
+                const color = collections[collectionName].color;
+                badgeEl.classList.remove('hidden');
+                badgeEl.style.setProperty('--badge-color', color);
+                badgeEl.style.background = color;
+                badgeEl.style.color = color === '#FFD700' ? '#000' : '#fff';
+                badgeEl.textContent = collectionName.toUpperCase();
+                
+                collectionNameEl.classList.remove('hidden');
+                collectionTextEl.textContent = collectionName;
+                collectionTextEl.style.color = color;
+                
+                metaEl.textContent = episodeInfo || 'Collection';
+                metaEl.style.color = color;
+            } else {
+                badgeEl.classList.add('hidden');
+                collectionNameEl.classList.add('hidden');
+                metaEl.textContent = 'Contenu exclusif';
+                metaEl.style.color = '#9ca3af';
+            }
+
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('video-modal');
+            const iframe = document.getElementById('modal-iframe');
+            
+            iframe.src = '';
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+            currentVideoId = null;
+        }
+
+        function replayVideo() {
+            const iframe = document.getElementById('modal-iframe');
+            const src = iframe.src;
+            iframe.src = '';
+            setTimeout(() => iframe.src = src, 100);
+        }
+
+        function shareVideo() {
+            if (currentVideoId) {
+                const url = `https://www.dailymotion.com/video/${currentVideoId}`;
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Lien copié dans le presse-papiers!');
+                });
+            }
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function showAllCollections() {
+            clearSearch();
+            scrollToSection('collections-container');
+        }
+
+        // Event listeners
+        document.getElementById('video-modal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeModal();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (currentVideoId) closeModal();
+                else if (!document.getElementById('search-results-container').classList.contains('hidden')) {
+                    clearSearch();
+                }
+            }
+        });
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px) scale(0.95); }
+                to { opacity: 1; transform: translateY(0) scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize
+        fetchVideos();
+    </script>
+</body>
+</html>
