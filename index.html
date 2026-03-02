@@ -159,17 +159,6 @@
             filter: brightness(0);
         }
         
-        .hint {
-            color: #888;
-            font-size: 14px;
-            text-align: center;
-            margin-top: 24px;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px dashed #333;
-        }
-        
         .dot-pattern {
             position: fixed;
             top: 0;
@@ -289,13 +278,6 @@
             </button>
             
             <div id="errorMessage" class="error-message"></div>
-            
-            <div class="hint">
-                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                Code secret : 1508 (4 chiffres)
-            </div>
         </form>
         
         <!-- Snapchat Footer Link -->
@@ -319,7 +301,7 @@
 
     <script>
         const VALID_CODE = "1508";
-        const REDIRECT_URL = "tunflix.html"; // Nom du fichier de votre page principale
+        const REDIRECT_URL = "tunflix.html";
         
         // Vérifier si déjà authentifié
         if (localStorage.getItem('tunflix_auth') === 'true') {
@@ -343,7 +325,7 @@
                 if (code === VALID_CODE) {
                     // Code correct
                     errorMessage.style.color = '#4ade80';
-                    errorMessage.innerHTML = '✓ Code valide! Redirection vers TUNFLIX...';
+                    errorMessage.innerHTML = '✓ Accès autorisé! Redirection...';
                     
                     // Stocker l'authentification
                     localStorage.setItem('tunflix_auth', 'true');
@@ -355,7 +337,7 @@
                 } else {
                     // Code incorrect
                     errorMessage.style.color = '#e50914';
-                    errorMessage.innerHTML = '✗ Code secret incorrect. Réessayez.';
+                    errorMessage.innerHTML = '✗ Code incorrect. Veuillez réessayer.';
                     
                     // Secouer l'input
                     codeInput.style.animation = 'shake 0.3s ease';
