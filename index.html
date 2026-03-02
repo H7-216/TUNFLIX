@@ -1,437 +1,400 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0051A5">
-<title>Carrefour Nice TNL - Scanner de Prix</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{
---blue:#0051A5;--blue-dark:#003D7A;--red:#E4002B;--green:#10B981;--dark:#1F2937;
---bg:#F5F7FA;--surface:#FFFFFF;--text:#1A1A2E;--text2:#6B7280;--border:#E5E7EB;
---warning:#F59E0B;--font:'Inter',system-ui,-apple-system,sans-serif;
-}
-html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden}
-#app{display:flex;flex-direction:column;height:100%;height:100dvh}
-
-.header{padding:0 20px 20px;border-radius:0 0 24px 24px;position:relative;z-index:10}
-.header-search{background:linear-gradient(135deg,var(--blue),var(--blue-dark))}
-.header-calc{background:linear-gradient(135deg,var(--dark),#111827)}
-.header-top{display:flex;align-items:center;gap:10px;margin-bottom:4px}
-.header-top .icon{font-size:28px;color:#fff}
-.header h1{font-size:22px;font-weight:700;color:#fff}
-.header-sub{font-size:14px;color:rgba(255,255,255,.7);margin-left:38px;margin-bottom:16px}
-
-.search-row{display:flex;gap:10px}
-.search-wrap{flex:1;display:flex;align-items:center;background:#fff;border-radius:14px;height:50px;padding:0 14px}
-.search-wrap .icon{color:var(--text2);margin-right:8px;font-size:20px}
-.search-wrap input{flex:1;border:none;outline:none;font-size:16px;font-family:var(--font);color:var(--text);background:transparent;height:100%}
-.search-wrap input::placeholder{color:var(--text2)}
-.clear-btn{background:none;border:none;cursor:pointer;padding:4px;display:none;color:#9CA3AF}
-.clear-btn.show{display:block}
-.scan-btn{width:50px;height:50px;border-radius:14px;background:var(--red);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;transition:opacity .15s}
-.scan-btn:active{opacity:.8}
-
-.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px;padding-bottom:90px}
-
-.empty-state{text-align:center;padding-top:16px}
-.empty-icon{width:100px;height:100px;border-radius:28px;background:rgba(0,81,165,.08);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
-.empty-icon .icon{font-size:56px;color:var(--blue)}
-.empty-state h2{font-size:20px;font-weight:700;margin-bottom:8px}
-.empty-state p{font-size:14px;color:var(--text2);line-height:20px;padding:0 16px;margin-bottom:24px}
-
-.examples-title{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;text-align:left}
-.example-item{display:flex;align-items:center;background:var(--surface);border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;gap:10px;transition:background .15s}
-.example-item:active{background:#F0F4FF}
-.example-left{flex:1;min-width:0}
-.example-ean{font-size:13px;font-weight:600;color:var(--blue);margin-bottom:2px}
-.example-name{font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.example-promo{background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap}
-.example-arrow{color:var(--text2);font-size:16px}
-
-.product-card{background:var(--surface);border-radius:20px;padding:20px;box-shadow:0 4px 12px rgba(0,0,0,.08);animation:slideUp .35s ease}
-.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px}
-.badge-promo{background:var(--red)}
-.badge-normal{background:var(--green)}
-.close-btn{background:none;border:none;cursor:pointer;color:var(--text2);font-size:22px;padding:4px}
-.product-name{font-size:20px;font-weight:700;line-height:26px;margin-bottom:10px}
-.meta-row{display:flex;gap:16px;margin-bottom:8px}
-.meta-item{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text2)}
-.meta-item .icon{font-size:16px}
-.cat-badge{display:inline-block;background:rgba(0,81,165,.08);padding:4px 10px;border-radius:8px;font-size:12px;font-weight:500;color:var(--blue);margin-bottom:16px}
-.price-section{background:#F8FAFC;border-radius:14px;padding:16px}
-.price-row{display:flex;align-items:center;gap:10px;margin-bottom:4px}
-.original-price{font-size:16px;font-weight:500;color:var(--text2);text-decoration:line-through}
-.discount-badge{background:var(--red);padding:4px 10px;border-radius:8px;font-size:14px;font-weight:700;color:#fff}
-.final-price{font-size:34px;font-weight:700;color:var(--blue);margin-top:4px}
-.savings{font-size:13px;font-weight:500;color:var(--green);margin-top:4px}
-.regular-price{font-size:34px;font-weight:700;color:var(--text)}
-
-.not-found{background:#FFF7ED;border-radius:16px;padding:24px;text-align:center;border:1px solid #FED7AA;animation:slideUp .35s ease}
-.not-found .icon{font-size:36px;color:var(--warning);margin-bottom:8px}
-.not-found h3{font-size:18px;font-weight:700;color:#92400E;margin-bottom:8px}
-.not-found p{font-size:14px;color:#B45309;line-height:20px}
-.not-found .hint{font-size:13px;font-weight:500;color:var(--blue);margin-top:8px}
-
-.calc-input-card{background:var(--surface);border-radius:16px;padding:20px;margin-bottom:24px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-.calc-input-card label{font-size:14px;font-weight:600;display:block;margin-bottom:12px}
-.price-input-wrap{display:flex;align-items:center;background:#F3F4F6;border-radius:14px;padding:0 16px;height:60px;gap:12px}
-.price-input-wrap .icon{font-size:22px;color:var(--text2)}
-.price-input-wrap input{flex:1;border:none;outline:none;font-size:28px;font-weight:600;font-family:var(--font);color:var(--text);background:transparent;height:100%}
-.price-input-wrap input::placeholder{color:#D1D5DB}
-.currency{font-size:28px;font-weight:600;color:var(--text2)}
-.error-msg{font-size:12px;font-weight:500;color:var(--red);margin-top:8px}
-
-.section-title{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
-.discount-btns{display:flex;gap:12px;margin-bottom:24px}
-.discount-btn{flex:1;height:80px;border-radius:16px;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:transform .15s,box-shadow .15s;color:#fff}
-.discount-btn:active{transform:scale(.93)}
-.discount-btn.selected{box-shadow:0 6px 16px rgba(0,0,0,.3)}
-.discount-btn.disabled{opacity:.4;pointer-events:none}
-.discount-btn .perc{font-size:24px;font-weight:700}
-.discount-btn .label{font-size:11px;font-weight:500;opacity:.8}
-.btn-green{background:var(--green)}
-.btn-red{background:var(--red)}
-.btn-dark{background:var(--dark)}
-
-.result-card{background:var(--surface);border-radius:20px;padding:20px;box-shadow:0 4px 12px rgba(0,0,0,.08);animation:slideUp .35s ease}
-.result-header{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.result-header .icon{font-size:22px;color:var(--blue)}
-.result-header span{font-size:17px;font-weight:700}
-.divider{height:1px;background:var(--border);margin:14px 0}
-.result-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.result-label{font-size:14px;color:var(--text2)}
-.result-original{font-size:16px;font-weight:500;color:var(--text2);text-decoration:line-through}
-.result-disc{background:var(--red);padding:4px 10px;border-radius:8px;font-size:14px;font-weight:700;color:#fff}
-.result-save{font-size:15px;font-weight:600;color:var(--green)}
-.result-final-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.result-final-label{font-size:16px;font-weight:600}
-.result-final-price{font-size:32px;font-weight:700;color:var(--blue)}
-.savings-card{display:flex;align-items:center;gap:8px;background:rgba(16,185,129,.08);border-radius:12px;padding:14px;margin-bottom:16px}
-.savings-card .icon{color:var(--green);font-size:20px}
-.savings-card span{font-size:14px;font-weight:600;color:var(--green)}
-.reset-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;border:1.5px solid var(--blue);background:transparent;cursor:pointer;font-size:15px;font-weight:600;color:var(--blue);font-family:var(--font);transition:background .15s}
-.reset-btn:active{background:rgba(0,81,165,.05)}
-
-.info-card{display:flex;align-items:flex-start;gap:10px;background:rgba(0,81,165,.06);border-radius:14px;padding:16px}
-.info-card .icon{font-size:22px;color:var(--blue);flex-shrink:0}
-.info-card p{font-size:14px;color:var(--text2);line-height:20px}
-
-.tab-bar{display:flex;background:var(--surface);border-top:1px solid var(--border);padding:6px 0;padding-bottom:max(env(safe-area-inset-bottom),6px);position:relative;z-index:20}
-.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;cursor:pointer;border:none;background:none;font-family:var(--font);transition:color .15s}
-.tab .icon{font-size:24px;color:var(--text2);transition:color .15s}
-.tab span{font-size:11px;font-weight:600;color:var(--text2);transition:color .15s}
-.tab.active .icon{color:var(--blue)}
-.tab.active span{color:var(--blue)}
-
-.hidden{display:none!important}
-@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUNFLIX - Authentification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;family=Bebas+Neue&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .brand-font {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+        }
+        
+        .auth-container {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(229, 9, 20, 0.3);
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(229, 9, 20, 0.1) inset;
+            max-width: 480px;
+            width: 100%;
+            padding: 48px 32px;
+            animation: floatIn 0.6s ease-out;
+        }
+        
+        @keyframes floatIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .input-code {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #333;
+            border-radius: 16px;
+            padding: 20px 24px;
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 8px;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-family: 'Inter', monospace;
+        }
+        
+        .input-code:focus {
+            border-color: #e50914;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.3);
+            background: rgba(0, 0, 0, 0.8);
+        }
+        
+        .input-code::placeholder {
+            letter-spacing: normal;
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .btn-netflix {
+            background: linear-gradient(135deg, #e50914 0%, #b00710 100%);
+            border-radius: 16px;
+            padding: 18px 32px;
+            font-weight: 700;
+            font-size: 18px;
+            color: white;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-netflix:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 30px -10px rgba(229, 9, 20, 0.5);
+        }
+        
+        .btn-netflix:active {
+            transform: translateY(0);
+        }
+        
+        .btn-netflix::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+            transform: rotate(30deg);
+            transition: transform 0.5s ease;
+        }
+        
+        .btn-netflix:hover::after {
+            transform: rotate(30deg) translate(20%, 20%);
+        }
+        
+        .error-message {
+            color: #e50914;
+            font-size: 14px;
+            margin-top: 12px;
+            text-align: center;
+            min-height: 24px;
+            font-weight: 500;
+            animation: shake 0.3s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .snapchat-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 32px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .snapchat-link:hover {
+            background: #fffc00;
+            border-color: #fffc00;
+            color: black;
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px -5px rgba(255, 252, 0, 0.4);
+        }
+        
+        .snapchat-link:hover svg {
+            filter: brightness(0);
+        }
+        
+        .hint {
+            color: #888;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 24px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px dashed #333;
+        }
+        
+        .dot-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle at 1px 1px, rgba(229, 9, 20, 0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            font-size: 64px;
+            background: linear-gradient(135deg, #e50914 0%, #ff4d4d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        
+        .subtitle {
+            color: #aaa;
+            font-size: 16px;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+        
+        .feature-badge {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin: 32px 0;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            background: rgba(229, 9, 20, 0.1);
+            border: 1px solid rgba(229, 9, 20, 0.2);
+            padding: 8px 16px;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .badge svg {
+            width: 16px;
+            height: 16px;
+            color: #e50914;
+        }
+        
+        .footer-note {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 24px;
+        }
+    </style>
 </head>
 <body>
-<div id="app">
-
-  <div id="header-search" class="header header-search">
-    <div style="padding-top:max(env(safe-area-inset-top),16px)"></div>
-    <div class="header-top">
-      <span class="icon material-icons-round">qr_code_scanner</span>
-      <h1>Carrefour Nice TNL</h1>
+    <div class="dot-pattern"></div>
+    
+    <div class="auth-container">
+        <!-- Logo -->
+        <div class="logo-container">
+            <div class="logo brand-font">TUNFLIX</div>
+            <div class="subtitle">Streaming Premium • Accès Privé</div>
+        </div>
+        
+        <!-- Feature Badges -->
+        <div class="feature-badge">
+            <div class="badge">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                HD
+            </div>
+            <div class="badge">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                4K Ultra
+            </div>
+            <div class="badge">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Exclusivités
+            </div>
+        </div>
+        
+        <!-- Login Form -->
+        <form id="loginForm" onsubmit="return handleLogin(event)">
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; color: #aaa; font-size: 14px; margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">
+                    🔐 CODE D'ACCÈS
+                </label>
+                <input type="password" 
+                       id="codeInput" 
+                       class="input-code" 
+                       placeholder="• • • •"
+                       maxlength="4"
+                       pattern="[0-9]*"
+                       inputmode="numeric"
+                       autofocus
+                       required>
+            </div>
+            
+            <button type="submit" class="btn-netflix">
+                <span style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                    </svg>
+                    ACCÉDER À TUNFLIX
+                </span>
+            </button>
+            
+            <div id="errorMessage" class="error-message"></div>
+            
+            <div class="hint">
+                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Code secret : 1508 (4 chiffres)
+            </div>
+        </form>
+        
+        <!-- Snapchat Footer Link -->
+        <a href="https://www.snapchat.com/add/h7_06200?share_id=u_T56Mv5TmOcaZ8QpB6lZw&locale=fr_FR" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="snapchat-link">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.206 22.924c-.423 0-.815-.029-1.178-.086-.223-.036-.468-.122-.639-.168a3.13 3.13 0 0 0-.418-.088c-.327-.038-.643.008-.969.082-.416.096-.824.274-1.244.313-.707.066-1.378-.123-1.97-.521-.416-.279-.745-.648-1.008-1.06-.305-.478-.51-1.006-.642-1.557-.096-.404-.12-.82-.175-1.231-.035-.262-.11-.516-.199-.765-.242-.684-.705-1.163-1.348-1.521-.785-.435-1.667-.585-2.55-.439-.291.048-.572.12-.853.122-.334.002-.586-.125-.734-.396-.165-.299-.103-.623.145-.945.304-.393.703-.692 1.143-.926.844-.447 1.765-.714 2.682-.924.446-.102.559-.181.65-.617.036-.177.051-.358.077-.537.152-1.079.097-2.122-.34-3.147-.647-1.519-2.087-2.499-3.78-2.49-.496.003-.977.1-1.43.271-.551.209-1.022.509-1.362.93-.259.321-.336.682-.177.986.148.282.464.441.891.441.244 0 .505-.055.759-.126.623-.174 1.004-.063 1.245.315.205.322.178.73-.044 1.089-.223.362-.527.649-.903.874-.763.455-1.609.72-2.472.882-.32.06-.525.324-.527.604-.005.707.148 1.358.479 1.953.567 1.018 1.466 1.691 2.67 1.954.168.036.336.064.506.097.014.003.028.015.048.03.162.122.084.314.073.497-.024.445-.108.88-.258 1.301-.207.582-.493 1.126-.829 1.64-.272.414-.596.786-.974 1.102-.315.264-.66.476-1.036.631-.583.238-1.178.38-1.798.45-.406.045-.826.019-1.234-.032-.269-.034-.462-.226-.462-.464 0-.096.037-.194.103-.277.202-.252.49-.395.813-.449.336-.056.683-.008 1.022.07.257.06.515.142.777.149.459.011.789-.274.773-.646-.006-.131-.051-.263-.143-.378-.19-.235-.522-.334-.884-.341-.304-.006-.61.065-.907.171-.276.099-.539.231-.81.315-.357.111-.714.149-1.023.053-.339-.105-.547-.399-.529-.732.017-.307.257-.556.584-.664.449-.149.907-.245 1.365-.329.896-.165 1.787-.35 2.638-.655.297-.106.59-.223.865-.367.74-.389 1.223-.941 1.419-1.762.087-.367.09-.743.068-1.118-.019-.311.017-.625.07-.934.061-.36.159-.711.277-1.055.157-.459.372-.898.613-1.319.097-.168.206-.332.299-.504.036-.065.014-.137-.018-.215-.119-.283-.375-.425-.727-.45-.344-.024-.654.117-.967.266-.431.204-.828.468-1.228.73-.184.12-.381.221-.567.332-.144.087-.292.151-.454.191-.188.047-.353-.036-.427-.18-.074-.141-.035-.314.071-.474.155-.233.359-.42.582-.588.589-.441 1.229-.797 1.934-1.026.419-.136.851-.229 1.291-.285.553-.071 1.102-.054 1.649.043.701.125 1.352.402 1.946.797.323.215.622.464.902.73.183.175.355.36.519.552.248.291.459.606.628.942.371.736.558 1.506.566 2.318.012 1.236-.274 2.406-1.029 3.438-.165.225-.358.431-.539.644-.115.136-.236.269-.323.425-.199.358-.072.723.137.952.218.237.56.34.916.32.379-.021.734-.159 1.079-.302.592-.245 1.165-.537 1.708-.874.385-.238.754-.501 1.097-.792.329-.279.63-.586.892-.923.181-.234.342-.482.479-.74.098-.183.225-.352.37-.507.146-.157.367-.181.523-.061.171.132.206.389.104.63-.131.309-.317.586-.527.842-.303.366-.645.694-1.016.986-.487.383-1.014.705-1.574.959-.573.259-1.166.447-1.781.56-.426.078-.862.108-1.296.097z"/>
+            </svg>
+            <span>Rejoignez-moi sur Snapchat</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+            </svg>
+        </a>
+        
+        <div class="footer-note">
+            © 2024 TUNFLIX. Accès réservé aux membres.
+        </div>
     </div>
-    <div class="header-sub">Scanner de prix & promotions</div>
-    <div class="search-row">
-      <div class="search-wrap">
-        <span class="icon material-icons-round">search</span>
-        <input type="text" id="searchInput" placeholder="Entrez un code-barres EAN..." inputmode="numeric" maxlength="13">
-        <button class="clear-btn" id="clearBtn" onclick="clearSearch()">
-          <span class="material-icons-round" style="font-size:20px">cancel</span>
-        </button>
-      </div>
-      <button class="scan-btn" onclick="doSearch()">
-        <span class="material-icons-round">qr_code_scanner</span>
-      </button>
-    </div>
-  </div>
 
-  <div id="header-calc" class="header header-calc hidden">
-    <div style="padding-top:max(env(safe-area-inset-top),16px)"></div>
-    <div class="header-top">
-      <span class="icon material-icons-round">calculate</span>
-      <h1>Simulateur de Soldes</h1>
-    </div>
-    <div class="header-sub">Calculez le prix apr&egrave;s r&eacute;duction</div>
-  </div>
-
-  <div class="content" id="searchContent">
-    <div id="emptyState" class="empty-state">
-      <div class="empty-icon"><span class="icon material-icons-round">barcode_reader</span></div>
-      <h2>Scannez un produit</h2>
-      <p>Entrez un code-barres EAN pour consulter le prix et les promotions en cours au Carrefour Nice TNL.</p>
-      <div class="examples-title">Exemples de codes EAN</div>
-      <div id="examplesList"></div>
-    </div>
-    <div id="productResult" class="hidden"></div>
-    <div id="notFoundResult" class="hidden"></div>
-  </div>
-
-  <div class="content hidden" id="calcContent">
-    <div class="calc-input-card">
-      <label>Prix original du produit</label>
-      <div class="price-input-wrap">
-        <span class="icon material-icons-round">sell</span>
-        <input type="text" id="priceInput" placeholder="0,00" inputmode="decimal">
-        <span class="currency">&euro;</span>
-      </div>
-      <div class="error-msg hidden" id="priceError">Veuillez entrer un prix valide</div>
-    </div>
-    <div class="section-title">Choisir la r&eacute;duction</div>
-    <div class="discount-btns">
-      <button class="discount-btn btn-green disabled" id="btn30" onclick="applyDiscount(30)">
-        <span class="perc">-30%</span><span class="label">Soldes</span>
-      </button>
-      <button class="discount-btn btn-red disabled" id="btn50" onclick="applyDiscount(50)">
-        <span class="perc">-50%</span><span class="label">Mi-prix</span>
-      </button>
-      <button class="discount-btn btn-dark disabled" id="btn70" onclick="applyDiscount(70)">
-        <span class="perc">-70%</span><span class="label">Liquidation</span>
-      </button>
-    </div>
-    <div id="calcResult" class="hidden"></div>
-    <div id="calcInfo" class="info-card">
-      <span class="icon material-icons-round">info</span>
-      <p>Entrez le prix du produit puis appuyez sur un bouton de r&eacute;duction pour calculer le nouveau prix sold&eacute;.</p>
-    </div>
-  </div>
-
-  <div class="tab-bar">
-    <button class="tab active" id="tabSearch" onclick="switchTab('search')">
-      <span class="icon material-icons-round">qr_code_scanner</span>
-      <span>Recherche</span>
-    </button>
-    <button class="tab" id="tabCalc" onclick="switchTab('calc')">
-      <span class="icon material-icons-round">calculate</span>
-      <span>Soldes</span>
-    </button>
-  </div>
-
-</div>
-
-<script>
-var products = [
-  {code_ean:"3017620422003",nom:"Nutella - P\u00e2te \u00e0 tartiner aux noisettes et cacao 400g",marque:"Ferrero",prix:4.95,promotion:true,reduction:30,categorie:"\u00c9picerie sucr\u00e9e"},
-  {code_ean:"5449000000996",nom:"Coca-Cola Original Taste 33cl",marque:"Coca-Cola",prix:1.10,promotion:false,reduction:0,categorie:"Boissons"},
-  {code_ean:"3033710065967",nom:"Nesquik Chocolat en poudre 1kg",marque:"Nestl\u00e9",prix:6.49,promotion:true,reduction:30,categorie:"Petit-d\u00e9jeuner"},
-  {code_ean:"3228857000166",nom:"Cristalline Eau de Source 1.5L",marque:"Cristalline",prix:0.55,promotion:false,reduction:0,categorie:"Boissons"},
-  {code_ean:"3560070824786",nom:"Carrefour Lait Demi-\u00c9cr\u00e9m\u00e9 UHT 1L",marque:"Carrefour",prix:1.15,promotion:false,reduction:0,categorie:"Produits laitiers"},
-  {code_ean:"3017760000109",nom:"Barilla Spaghetti n.5 500g",marque:"Barilla",prix:1.89,promotion:true,reduction:30,categorie:"\u00c9picerie sal\u00e9e"},
-  {code_ean:"3033710065950",nom:"Nesquik Chocolat en poudre 450g",marque:"Nestl\u00e9",prix:3.29,promotion:false,reduction:0,categorie:"Petit-d\u00e9jeuner"},
-  {code_ean:"8001505005592",nom:"Lavazza Caff\u00e8 Crema e Aroma Grains 1kg",marque:"Lavazza",prix:14.90,promotion:true,reduction:30,categorie:"Boissons chaudes"},
-  {code_ean:"3256220111614",nom:"Carrefour Bio \u0152ufs Plein Air x6",marque:"Carrefour Bio",prix:2.99,promotion:false,reduction:0,categorie:"Cr\u00e9merie"},
-  {code_ean:"3175680011480",nom:"Volvic Eau Min\u00e9rale Naturelle 1.5L",marque:"Volvic",prix:0.89,promotion:false,reduction:0,categorie:"Boissons"},
-  {code_ean:"7613035989887",nom:"Nescaf\u00e9 Gold Soluble 200g",marque:"Nescaf\u00e9",prix:9.95,promotion:true,reduction:50,categorie:"Boissons chaudes"},
-  {code_ean:"3560070452125",nom:"Carrefour Papier Toilette Confort x12",marque:"Carrefour",prix:4.50,promotion:true,reduction:70,categorie:"Hygi\u00e8ne"},
-  {code_ean:"3045320094084",nom:"Lindt Excellence Noir 70% Cacao 100g",marque:"Lindt",prix:2.99,promotion:false,reduction:0,categorie:"Confiserie"},
-  {code_ean:"3228021170039",nom:"Danone Activia Nature x12",marque:"Danone",prix:4.75,promotion:true,reduction:30,categorie:"Produits laitiers"},
-  {code_ean:"3560070956920",nom:"Carrefour Filets de Poulet x4 500g",marque:"Carrefour",prix:6.90,promotion:false,reduction:0,categorie:"Boucherie"},
-  {code_ean:"8076800195057",nom:"Barilla Pesto alla Genovese 190g",marque:"Barilla",prix:2.49,promotion:true,reduction:30,categorie:"\u00c9picerie sal\u00e9e"},
-  {code_ean:"3560070472550",nom:"Carrefour Gel Douche Surgras 750ml",marque:"Carrefour",prix:2.19,promotion:true,reduction:50,categorie:"Hygi\u00e8ne"},
-  {code_ean:"3073781069532",nom:"Fleury Michon Jambon Blanc x4 tranches",marque:"Fleury Michon",prix:3.15,promotion:false,reduction:0,categorie:"Charcuterie"},
-  {code_ean:"3560070985135",nom:"Carrefour Shampooing Usage Fr\u00e9quent 500ml",marque:"Carrefour",prix:1.99,promotion:true,reduction:70,categorie:"Hygi\u00e8ne"},
-  {code_ean:"3038350042002",nom:"Bonduelle Ma\u00efs Doux en Grains 300g",marque:"Bonduelle",prix:1.65,promotion:false,reduction:0,categorie:"Conserves"},
-  {code_ean:"5000159484695",nom:"Whiskas Croquettes Chat Adulte 1.75kg",marque:"Whiskas",prix:7.49,promotion:true,reduction:30,categorie:"Animalerie"},
-  {code_ean:"3560071154714",nom:"Carrefour Barres Gourmandes C\u00e9r\u00e9ales 140g",marque:"Carrefour",prix:1.79,promotion:false,reduction:0,categorie:"Petit-d\u00e9jeuner"},
-  {code_ean:"3560070735204",nom:"Carrefour Sp\u00e9cialit\u00e9 au Citron 70cl",marque:"Carrefour",prix:1.49,promotion:true,reduction:50,categorie:"Boissons"},
-  {code_ean:"3560071400422",nom:"Carrefour Biscuits Petit Beurre 200g",marque:"Carrefour",prix:1.25,promotion:false,reduction:0,categorie:"\u00c9picerie sucr\u00e9e"},
-  {code_ean:"3248830706868",nom:"Pommes Golden Sachet 1.5kg",marque:"Fili\u00e8re Qualit\u00e9 Carrefour",prix:1.99,promotion:true,reduction:30,categorie:"Fruits et L\u00e9gumes"},
-  {code_ean:"3560070100200",nom:"Avocat Hass Bio pi\u00e8ce",marque:"Carrefour Bio",prix:1.59,promotion:false,reduction:0,categorie:"Fruits et L\u00e9gumes"},
-  {code_ean:"3560070139101",nom:"Citron Jaune pi\u00e8ce",marque:"Carrefour",prix:0.80,promotion:false,reduction:0,categorie:"Fruits et L\u00e9gumes"},
-  {code_ean:"3560070100460",nom:"Coriandre Fra\u00eeche botte",marque:"Carrefour",prix:0.99,promotion:false,reduction:0,categorie:"Fruits et L\u00e9gumes"},
-  {code_ean:"3256224520085",nom:"Chou-Fleur Pr\u00eat \u00e0 Croquer 250g",marque:"Florette",prix:2.25,promotion:false,reduction:0,categorie:"Fruits et L\u00e9gumes"},
-  {code_ean:"3560070300105",nom:"Cocktail Olives Tropic Ap\u00e9ro 150g",marque:"Carrefour",prix:2.95,promotion:true,reduction:30,categorie:"\u00c9picerie sal\u00e9e"}
-];
-
-var currentTab = 'search';
-var selectedDiscount = null;
-
-function formatPrice(p) {
-  return p.toFixed(2).replace('.', ',') + ' \u20AC';
-}
-
-function switchTab(tab) {
-  currentTab = tab;
-  document.getElementById('tabSearch').classList.toggle('active', tab === 'search');
-  document.getElementById('tabCalc').classList.toggle('active', tab === 'calc');
-  document.getElementById('header-search').classList.toggle('hidden', tab !== 'search');
-  document.getElementById('header-calc').classList.toggle('hidden', tab !== 'calc');
-  document.getElementById('searchContent').classList.toggle('hidden', tab !== 'search');
-  document.getElementById('calcContent').classList.toggle('hidden', tab !== 'calc');
-}
-
-function buildExamples() {
-  var el = document.getElementById('examplesList');
-  var html = '';
-  var shown = products.slice(0, 6);
-  for (var i = 0; i < shown.length; i++) {
-    var p = shown[i];
-    html += '<div class="example-item" onclick="fillSearch(\'' + p.code_ean + '\')">';
-    html += '<div class="example-left">';
-    html += '<div class="example-ean">' + p.code_ean + '</div>';
-    html += '<div class="example-name">' + p.nom + '</div>';
-    html += '</div>';
-    if (p.promotion) {
-      html += '<span class="example-promo">-' + p.reduction + '%</span>';
-    }
-    html += '<span class="example-arrow material-icons-round">chevron_right</span>';
-    html += '</div>';
-  }
-  el.innerHTML = html;
-}
-
-function fillSearch(ean) {
-  document.getElementById('searchInput').value = ean;
-  document.getElementById('clearBtn').classList.add('show');
-}
-
-function clearSearch() {
-  document.getElementById('searchInput').value = '';
-  document.getElementById('clearBtn').classList.remove('show');
-  document.getElementById('emptyState').classList.remove('hidden');
-  document.getElementById('productResult').classList.add('hidden');
-  document.getElementById('notFoundResult').classList.add('hidden');
-}
-
-function doSearch() {
-  var q = document.getElementById('searchInput').value.trim();
-  if (!q) return;
-  document.getElementById('clearBtn').classList.add('show');
-
-  var found = null;
-  for (var i = 0; i < products.length; i++) {
-    if (products[i].code_ean === q) { found = products[i]; break; }
-  }
-
-  document.getElementById('emptyState').classList.add('hidden');
-
-  if (found) {
-    document.getElementById('notFoundResult').classList.add('hidden');
-    var pr = document.getElementById('productResult');
-    pr.classList.remove('hidden');
-
-    var priceHtml = '';
-    if (found.promotion && found.reduction > 0) {
-      var discounted = found.prix * (1 - found.reduction / 100);
-      var saved = found.prix * (found.reduction / 100);
-      priceHtml = '<div class="price-row">' +
-        '<span class="original-price">' + formatPrice(found.prix) + '</span>' +
-        '<span class="discount-badge">-' + found.reduction + '%</span>' +
-        '</div>' +
-        '<div class="final-price">' + formatPrice(discounted) + '</div>' +
-        '<div class="savings">\u00c9conomie de ' + formatPrice(saved) + '</div>';
-    } else {
-      priceHtml = '<div class="regular-price">' + formatPrice(found.prix) + '</div>';
-    }
-
-    pr.innerHTML = '<div class="product-card">' +
-      '<div class="card-header">' +
-        '<span class="badge ' + (found.promotion ? 'badge-promo' : 'badge-normal') + '">' +
-          '<span class="material-icons-round" style="font-size:14px">' + (found.promotion ? 'local_offer' : 'check_circle') + '</span>' +
-          (found.promotion ? 'EN PROMO' : 'Prix normal') +
-        '</span>' +
-        '<button class="close-btn" onclick="clearSearch()"><span class="material-icons-round">close</span></button>' +
-      '</div>' +
-      '<div class="product-name">' + found.nom + '</div>' +
-      '<div class="meta-row">' +
-        '<div class="meta-item"><span class="icon material-icons-round" style="font-size:16px">barcode_reader</span>' + found.code_ean + '</div>' +
-        '<div class="meta-item"><span class="icon material-icons-round" style="font-size:16px">sell</span>' + found.marque + '</div>' +
-      '</div>' +
-      '<div class="cat-badge">' + found.categorie + '</div>' +
-      '<div class="price-section">' + priceHtml + '</div>' +
-    '</div>';
-  } else {
-    document.getElementById('productResult').classList.add('hidden');
-    var nf = document.getElementById('notFoundResult');
-    nf.classList.remove('hidden');
-    nf.innerHTML = '<div class="not-found">' +
-      '<span class="icon material-icons-round">warning_amber</span>' +
-      '<h3>Produit non trouv\u00e9</h3>' +
-      '<p>Le code-barres "' + q + '" n\'existe pas dans la base Carrefour Nice TNL.</p>' +
-      '<p class="hint">Utilisez l\'onglet "Soldes" pour calculer manuellement une r\u00e9duction.</p>' +
-    '</div>';
-  }
-}
-
-document.getElementById('searchInput').addEventListener('input', function() {
-  var v = this.value;
-  document.getElementById('clearBtn').classList.toggle('show', v.length > 0);
-});
-
-document.getElementById('searchInput').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') doSearch();
-});
-
-document.getElementById('priceInput').addEventListener('input', function() {
-  var val = this.value.replace(',', '.');
-  var num = parseFloat(val);
-  var valid = !isNaN(num) && num > 0;
-
-  document.getElementById('priceError').classList.toggle('hidden', !(this.value.length > 0 && !valid));
-
-  var btns = document.querySelectorAll('.discount-btn');
-  for (var i = 0; i < btns.length; i++) {
-    btns[i].classList.toggle('disabled', !valid);
-  }
-
-  selectedDiscount = null;
-  document.querySelectorAll('.discount-btn').forEach(function(b) { b.classList.remove('selected'); });
-  document.getElementById('calcResult').classList.add('hidden');
-  document.getElementById('calcInfo').classList.remove('hidden');
-});
-
-function applyDiscount(perc) {
-  var raw = document.getElementById('priceInput').value.replace(',', '.');
-  var price = parseFloat(raw);
-  if (isNaN(price) || price <= 0) return;
-
-  selectedDiscount = perc;
-  var discounted = Math.round(price * (1 - perc / 100) * 100) / 100;
-  var saved = Math.round((price - discounted) * 100) / 100;
-
-  document.querySelectorAll('.discount-btn').forEach(function(b) { b.classList.remove('selected'); });
-  document.getElementById('btn' + perc).classList.add('selected');
-
-  document.getElementById('calcInfo').classList.add('hidden');
-  var cr = document.getElementById('calcResult');
-  cr.classList.remove('hidden');
-
-  cr.innerHTML = '<div class="result-card">' +
-    '<div class="result-header"><span class="icon material-icons-round">local_offer</span><span>R\u00e9sultat</span></div>' +
-    '<div class="divider"></div>' +
-    '<div class="result-row"><span class="result-label">Prix original</span><span class="result-original">' + formatPrice(price) + '</span></div>' +
-    '<div class="result-row"><span class="result-label">R\u00e9duction appliqu\u00e9e</span><span class="result-disc">-' + perc + '%</span></div>' +
-    '<div class="result-row"><span class="result-label">Montant de la remise</span><span class="result-save">-' + formatPrice(saved) + '</span></div>' +
-    '<div class="divider"></div>' +
-    '<div class="result-final-row"><span class="result-final-label">Nouveau prix</span><span class="result-final-price">' + formatPrice(discounted) + '</span></div>' +
-    '<div class="savings-card"><span class="icon material-icons-round">account_balance_wallet</span><span>\u00c9conomie de ' + formatPrice(saved) + '</span></div>' +
-    '<button class="reset-btn" onclick="resetCalc()"><span class="material-icons-round" style="font-size:18px">refresh</span> Nouveau calcul</button>' +
-  '</div>';
-}
-
-function resetCalc() {
-  document.getElementById('priceInput').value = '';
-  selectedDiscount = null;
-  document.querySelectorAll('.discount-btn').forEach(function(b) { b.classList.remove('selected'); b.classList.add('disabled'); });
-  document.getElementById('calcResult').classList.add('hidden');
-  document.getElementById('calcInfo').classList.remove('hidden');
-}
-
-buildExamples();
-</script>
+    <script>
+        const VALID_CODE = "1508";
+        const REDIRECT_URL = "tunflix.html"; // Nom du fichier de votre page principale
+        
+        // Vérifier si déjà authentifié
+        if (localStorage.getItem('tunflix_auth') === 'true') {
+            window.location.href = REDIRECT_URL;
+        }
+        
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const codeInput = document.getElementById('codeInput');
+            const errorMessage = document.getElementById('errorMessage');
+            const code = codeInput.value.trim();
+            
+            // Animation de chargement
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span style="display: flex; align-items: center; justify-content: center; gap: 12px;"><svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> VÉRIFICATION...</span>';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                if (code === VALID_CODE) {
+                    // Code correct
+                    errorMessage.style.color = '#4ade80';
+                    errorMessage.innerHTML = '✓ Code valide! Redirection vers TUNFLIX...';
+                    
+                    // Stocker l'authentification
+                    localStorage.setItem('tunflix_auth', 'true');
+                    
+                    // Rediriger vers la page principale
+                    setTimeout(() => {
+                        window.location.href = REDIRECT_URL;
+                    }, 1000);
+                } else {
+                    // Code incorrect
+                    errorMessage.style.color = '#e50914';
+                    errorMessage.innerHTML = '✗ Code secret incorrect. Réessayez.';
+                    
+                    // Secouer l'input
+                    codeInput.style.animation = 'shake 0.3s ease';
+                    setTimeout(() => {
+                        codeInput.style.animation = '';
+                    }, 300);
+                    
+                    codeInput.value = '';
+                    codeInput.focus();
+                    
+                    // Restaurer le bouton
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            }, 800);
+            
+            return false;
+        }
+        
+        // Auto-focus et restrictions (que des chiffres)
+        document.getElementById('codeInput').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);
+        });
+        
+        // Gérer la touche Entrée
+        document.getElementById('codeInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleLogin(e);
+            }
+        });
+        
+        // Effet de focus
+        document.getElementById('codeInput').addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+        });
+        
+        document.getElementById('codeInput').addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    </script>
 </body>
 </html>
