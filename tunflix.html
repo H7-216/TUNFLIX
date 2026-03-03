@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/jpeg" href="Image JPEG.jpeg">
     <title>TUNFLIX - Streaming Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -200,21 +199,142 @@
             filter: brightness(0);
         }
 
-        /* Info Modal */
-        .info-modal {
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(229, 9, 20, 0.3);
+        /* SIDEBAR STYLES - NOUVEAU */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            background: linear-gradient(180deg, #0a0a0a 0%, #141414 100%);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            z-index: 60;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            padding-top: 80px;
         }
 
-        .footer-link {
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 70;
+            width: 50px;
+            height: 50px;
+            background: rgba(229, 9, 20, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
+            box-shadow: 0 4px 20px rgba(229, 9, 20, 0.4);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-toggle:hover {
+            transform: translateY(-50%) scale(1.1);
+            background: #e50914;
+        }
+
+        .sidebar-toggle svg {
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.open + .sidebar-toggle svg {
+            transform: rotate(180deg);
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 55;
+            opacity: 0;
+            visibility: hidden;
             transition: all 0.3s ease;
         }
 
-        .footer-link:hover {
-            color: #e50914 !important;
-            transform: translateX(5px);
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .series-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .series-item:hover {
+            background: rgba(255,255,255,0.05);
+            border-left-color: #e50914;
+            padding-left: 25px;
+        }
+
+        .series-item.active {
+            background: rgba(229, 9, 20, 0.2);
+            border-left-color: #e50914;
+        }
+
+        .series-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .series-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .series-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .series-count {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 10px;
+        }
+
+        .sidebar-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Ajuster le contenu principal quand la sidebar est ouverte sur desktop */
+        @media (min-width: 1024px) {
+            .sidebar.open ~ .main-wrapper {
+                margin-left: 280px;
+            }
+        }
+
+        .main-wrapper {
+            transition: margin-left 0.3s ease;
         }
     </style>
 </head>
@@ -231,558 +351,302 @@
             localStorage.removeItem('tunflix_auth');
             window.location.href = 'index.html';
         }
-
-        // Fonctions pour les modals d'information
-        function openInfoModal(title, content, icon = 'ℹ️') {
-            const modal = document.getElementById('info-modal');
-            document.getElementById('info-modal-title').textContent = title;
-            document.getElementById('info-modal-content').innerHTML = content;
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeInfoModal() {
-            document.getElementById('info-modal').classList.add('hidden');
-            document.body.style.overflow = '';
-        }
-
-        // Contenus des modals
-        const infoContents = {
-            'audio': `
-                <div class="space-y-4">
-                    <p class="text-lg">🎧 Description Audio</p>
-                    <p>Profitez de nos contenus avec description audio pour les malvoyants.</p>
-                    <ul class="list-disc list-inside text-gray-300 space-y-2 mt-4">
-                        <li>🔊 Audio description disponible sur tous les contenus</li>
-                        <li>🎤 Voix claire et précise</li>
-                        <li>📱 Compatible avec tous les appareils</li>
-                    </ul>
-                </div>
-            `,
-            'investisseurs': `
-                <div class="space-y-4">
-                    <p class="text-lg">📈 Relations Investisseurs</p>
-                    <p>TUNFLIX est la plateforme de streaming qui monte !</p>
-                    <div class="bg-gray-800 p-4 rounded-lg mt-4">
-                        <p class="font-bold">Contact investisseurs :</p>
-                        <p>investisseurs@tunflix.com</p>
-                        <p class="mt-2">📊 Chiffres clés :</p>
-                        <ul class="list-disc list-inside">
-                            <li>+1M d'utilisateurs</li>
-                            <li>1000+ contenus exclusifs</li>
-                            <li>Croissance +200%</li>
-                        </ul>
-                    </div>
-                </div>
-            `,
-            'legal': `
-                <div class="space-y-4">
-                    <p class="text-lg">⚖️ Informations légales</p>
-                    <p>TUNFLIX - Société de streaming</p>
-                    <div class="bg-gray-800 p-4 rounded-lg mt-4">
-                        <p>📍 15 Rue de Tunis, 75002 Paris</p>
-                        <p>📧 contact@tunflix.com</p>
-                        <p>📞 +216 00 000 000</p>
-                        <p class="mt-2">SIRET: 123 456 789 00012</p>
-                        <p>RCS Paris B 123 456 789</p>
-                    </div>
-                </div>
-            `,
-            'aide': `
-                <div class="space-y-4">
-                    <p class="text-lg">❓ Centre d'aide</p>
-                    <p>Comment pouvons-nous vous aider ?</p>
-                    <div class="grid gap-3 mt-4">
-                        <div class="bg-gray-800 p-3 rounded-lg">
-                            <p class="font-bold">🔑 Mot de passe oublié ?</p>
-                            <p class="text-sm">Contactez le support</p>
-                        </div>
-                        <div class="bg-gray-800 p-3 rounded-lg">
-                            <p class="font-bold">📺 Problème de lecture</p>
-                            <p class="text-sm">Vérifiez votre connexion</p>
-                        </div>
-                        <div class="bg-gray-800 p-3 rounded-lg">
-                            <p class="font-bold">💳 Paiement</p>
-                            <p class="text-sm">Support 24/7</p>
-                        </div>
-                    </div>
-                </div>
-            `,
-            'recrutement': `
-                <div class="space-y-4">
-                    <p class="text-lg">💼 Rejoignez l'équipe</p>
-                    <p>Nous recrutons !</p>
-                    <div class="bg-gray-800 p-4 rounded-lg mt-4">
-                        <p class="font-bold">Postes ouverts :</p>
-                        <ul class="list-disc list-inside mt-2">
-                            <li>Développeur Frontend (React)</li>
-                            <li>Community Manager</li>
-                            <li>Content Manager</li>
-                            <li>Data Analyst</li>
-                        </ul>
-                        <p class="mt-4">📧 Envoyez votre CV : jobs@tunflix.com</p>
-                    </div>
-                </div>
-            `,
-            'cookies': `
-                <div class="space-y-4">
-                    <p class="text-lg">🍪 Préférences de cookies</p>
-                    <p>Gérez vos préférences de cookies</p>
-                    <div class="bg-gray-800 p-4 rounded-lg mt-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <span>Cookies essentiels</span>
-                            <span class="text-green-400">✓ Toujours actifs</span>
-                        </div>
-                        <div class="flex items-center justify-between mb-3">
-                            <span>Cookies de performance</span>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" class="sr-only peer" checked>
-                                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
-                            </label>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span>Cookies publicitaires</span>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" class="sr-only peer">
-                                <div class="w-11 h-6 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            `,
-            'cadeaux': `
-                <div class="space-y-4">
-                    <p class="text-lg">🎁 Cartes cadeaux</p>
-                    <p>Offrez TUNFLIX à vos proches !</p>
-                    <div class="grid grid-cols-2 gap-3 mt-4">
-                        <div class="bg-gray-800 p-3 rounded-lg text-center">
-                            <p class="text-xl font-bold">1 mois</p>
-                            <p class="text-red-500">9.99€</p>
-                        </div>
-                        <div class="bg-gray-800 p-3 rounded-lg text-center">
-                            <p class="text-xl font-bold">3 mois</p>
-                            <p class="text-red-500">24.99€</p>
-                        </div>
-                        <div class="bg-gray-800 p-3 rounded-lg text-center">
-                            <p class="text-xl font-bold">6 mois</p>
-                            <p class="text-red-500">44.99€</p>
-                        </div>
-                        <div class="bg-gray-800 p-3 rounded-lg text-center">
-                            <p class="text-xl font-bold">1 an</p>
-                            <p class="text-red-500">79.99€</p>
-                        </div>
-                    </div>
-                </div>
-            `,
-            'conditions': `
-                <div class="space-y-4">
-                    <p class="text-lg">📋 Conditions d'utilisation</p>
-                    <div class="h-64 overflow-y-auto bg-gray-800 p-4 rounded-lg text-sm">
-                        <p class="mb-3">1. Acceptation des conditions</p>
-                        <p class="mb-3">2. Compte utilisateur</p>
-                        <p class="mb-3">3. Contenu et abonnement</p>
-                        <p class="mb-3">4. Propriété intellectuelle</p>
-                        <p class="mb-3">5. Limitation de responsabilité</p>
-                        <p class="mb-3">6. Résiliation</p>
-                        <p class="mb-3">7. Loi applicable</p>
-                        <p>Dernière mise à jour : Mars 2024</p>
-                    </div>
-                </div>
-            `,
-            'mentions': `
-                <div class="space-y-4">
-                    <p class="text-lg">📄 Mentions légales</p>
-                    <div class="bg-gray-800 p-4 rounded-lg">
-                        <p><strong>Éditeur :</strong> TUNFLIX SAS</p>
-                        <p><strong>Directeur publication :</strong> Mehdi Ben Ali</p>
-                        <p><strong>Hébergeur :</strong> AWS (Amazon)</p>
-                        <p><strong>CNIL :</strong> Déclaration n° 1234567</p>
-                    </div>
-                </div>
-            `,
-            'presse': `
-                <div class="space-y-4">
-                    <p class="text-lg">📰 Espace Presse</p>
-                    <p>Contact presse et médias</p>
-                    <div class="bg-gray-800 p-4 rounded-lg mt-4">
-                        <p class="font-bold">Dossier de presse :</p>
-                        <p>TUNFLIX révolutionne le streaming en Tunisie</p>
-                        <p class="mt-3">📧 presse@tunflix.com</p>
-                        <p>📱 +216 00 000 001</p>
-                    </div>
-                </div>
-            `,
-            'confidentialite': `
-                <div class="space-y-4">
-                    <p class="text-lg">🔒 Politique de confidentialité</p>
-                    <p>Nous protégeons vos données</p>
-                    <ul class="list-disc list-inside text-gray-300 space-y-2 mt-4">
-                        <li>✅ Données chiffrées</li>
-                        <li>✅ Aucune vente à des tiers</li>
-                        <li>✅ Conformité RGPD</li>
-                        <li>✅ Droit à l'oubli</li>
-                    </ul>
-                </div>
-            `,
-            'contact': `
-                <div class="space-y-4">
-                    <p class="text-lg">📞 Nous contacter</p>
-                    <div class="bg-gray-800 p-4 rounded-lg">
-                        <p class="flex items-center gap-2"><span class="text-red-500">📧</span> support@tunflix.com</p>
-                        <p class="flex items-center gap-2"><span class="text-red-500">📱</span> +216 00 000 002</p>
-                        <p class="flex items-center gap-2"><span class="text-red-500">📍</span> Tunis, Tunisie</p>
-                        <p class="mt-3 text-sm">Disponible 7j/7 de 9h à 20h</p>
-                    </div>
-                </div>
-            `,
-            'profil': `
-                <div class="space-y-4">
-                    <p class="text-lg">👤 Mon profil</p>
-                    <div class="bg-gray-800 p-4 rounded-lg">
-                        <p><strong>Pseudo :</strong> Membre Premium</p>
-                        <p><strong>Email :</strong> membre@tunflix.com</p>
-                        <p><strong>Abonnement :</strong> Premium</p>
-                        <p><strong>Date d'inscription :</strong> 15/03/2024</p>
-                    </div>
-                </div>
-            `,
-            'parametres': `
-                <div class="space-y-4">
-                    <p class="text-lg">⚙️ Paramètres</p>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
-                            <span>Langue</span>
-                            <select class="bg-gray-700 rounded px-2 py-1">
-                                <option>Français</option>
-                                <option>Arabe</option>
-                                <option>Anglais</option>
-                            </select>
-                        </div>
-                        <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
-                            <span>Qualité par défaut</span>
-                            <select class="bg-gray-700 rounded px-2 py-1">
-                                <option>Auto</option>
-                                <option>HD</option>
-                                <option>4K</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            `,
-            'confidentialite-profil': `
-                <div class="space-y-4">
-                    <p class="text-lg">🔐 Confidentialité</p>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
-                            <span>Profil public</span>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" class="sr-only peer" checked>
-                                <div class="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
-                            </label>
-                        </div>
-                        <div class="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
-                            <span>Historique visible</span>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" class="sr-only peer" checked>
-                                <div class="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            `
-        };
     </script>
 
-    <!-- Navigation -->
-    <nav id="navbar" class="fixed w-full z-50 transition-all duration-500 py-4 px-4 md:px-12 flex items-center justify-between nav-blur">
-        <div class="flex items-center gap-8">
-            <h1 class="brand-font text-3xl md:text-4xl text-red-600 font-bold cursor-pointer hover:text-red-500 transition-colors" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
-                TUNFLIX
-            </h1>
-            <div class="hidden md:flex gap-6 text-sm font-medium">
-                <a href="#" onclick="showAllCollections()" class="hover:text-gray-300 transition-colors">Accueil</a>
-                <a href="#collections-container" class="hover:text-gray-300 transition-colors">Collections</a>
-                <a href="#" onclick="scrollToSection('all-videos')" class="hover:text-gray-300 transition-colors">Tout</a>
-                <a href="#" onclick="openInfoModal('Nouveautés', '<p>Découvrez les dernières sorties exclusives sur TUNFLIX !</p><div class=\'grid grid-cols-2 gap-2 mt-4\'><div class=\'bg-gray-800 p-2 rounded\'><span class=\'text-red-500\'>🔴</span> Nouveau film</div><div class=\'bg-gray-800 p-2 rounded\'><span class=\'text-red-500\'>🔴</span> Série récente</div></div>')" class="hover:text-gray-300 transition-colors">Nouveautés</a>
+    <!-- SIDEBAR - NOUVEAU -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+                <span>Mes Séries</span>
             </div>
+            <p class="text-xs text-gray-500 mt-1">Cliquez pour naviguer</p>
         </div>
-        
-        <div class="flex items-center gap-4">
-            <!-- Search Bar -->
-            <div class="search-container flex items-center bg-black/40 rounded-full px-3 py-2 border border-transparent hover:border-gray-600 transition-all" id="search-container">
-                <button onclick="toggleSearch()" class="p-1 hover:text-white transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                </button>
-                <input type="text" id="search-input" class="search-input bg-transparent border-none outline-none text-white placeholder-gray-400 ml-2 text-sm" placeholder="Titres, collections..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Escape')closeSearch()">
-                <button onclick="clearSearch()" id="clear-search" class="hidden p-1 hover:text-white">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
+        <div id="sidebar-series-list">
+            <!-- Les séries seront injectées ici dynamiquement -->
+        </div>
+    </div>
 
-            <!-- Notifications -->
-            <button onclick="openInfoModal('Notifications', '<p>Aucune nouvelle notification</p><p class=\'text-gray-400 text-sm mt-2\'>Vous serez notifié des nouveaux épisodes</p>')" class="p-2 hover:bg-white/10 rounded-full transition-colors relative">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                <span class="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full"></span>
-            </button>
+    <!-- Overlay pour fermer la sidebar en cliquant à l'extérieur -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
-            <!-- Profile Menu with Logout Functionality -->
-            <div class="profile-container relative">
-                <button class="flex items-center gap-2 group" onclick="toggleProfile()">
-                    <div class="w-8 h-8 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center text-xs font-bold border-2 border-transparent group-hover:border-white transition-all">
-                        TU
-                    </div>
-                    <svg class="w-4 h-4 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                
-                <!-- Profile Dropdown -->
-                <div class="profile-dropdown absolute right-0 top-full mt-2 w-56 bg-black/95 border border-gray-700 rounded-lg shadow-2xl py-2 backdrop-blur-md z-50">
-                    <div class="px-4 py-3 border-b border-gray-800">
-                        <p class="font-bold text-white">Membre Premium</p>
-                        <p class="text-xs text-gray-400">Accès illimité</p>
-                    </div>
-                    <a href="#" onclick="openInfoModal('Mon profil', infoContents['profil'])" class="block px-4 py-2 hover:bg-white/10 transition-colors text-sm flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                        Mon profil
-                    </a>
-                    <a href="#" onclick="openInfoModal('Paramètres', infoContents['parametres'])" class="block px-4 py-2 hover:bg-white/10 transition-colors text-sm flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        Paramètres
-                    </a>
-                    <a href="#" onclick="openInfoModal('Confidentialité', infoContents['confidentialite-profil'])" class="block px-4 py-2 hover:bg-white/10 transition-colors text-sm flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                        Confidentialité
-                    </a>
-                    <div class="border-t border-gray-800 mt-2 pt-2">
-                        <a href="#" onclick="logout()" class="block px-4 py-2 hover:bg-white/10 transition-colors text-sm text-red-400 hover:text-red-300 flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                            Déconnexion
-                        </a>
-                    </div>
+    <!-- Bouton pour ouvrir/fermer la sidebar -->
+    <div class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+    </div>
+
+    <div class="main-wrapper">
+        <!-- Navigation -->
+        <nav id="navbar" class="fixed w-full z-50 transition-all duration-500 py-4 px-4 md:px-12 flex items-center justify-between nav-blur">
+            <div class="flex items-center gap-8">
+                <h1 class="brand-font text-3xl md:text-4xl text-red-600 font-bold cursor-pointer hover:text-red-500 transition-colors" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                    TUNFLIX
+                </h1>
+                <div class="hidden md:flex gap-6 text-sm font-medium">
+                    <a href="#" onclick="showAllCollections()" class="hover:text-gray-300 transition-colors">Accueil</a>
+                    <a href="#collections-container" class="hover:text-gray-300 transition-colors">Collections</a>
+                    <a href="#" onclick="scrollToSection('all-videos')" class="hover:text-gray-300 transition-colors">Tout</a>
+                    <a href="#" class="hover:text-gray-300 transition-colors">Nouveautés</a>
                 </div>
             </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <header class="relative h-[85vh] w-full overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10"></div>
-        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2525&auto=format&fit=crop')] bg-cover bg-center"></div>
-        <div class="hero-gradient absolute inset-0 z-10"></div>
-        
-        <div class="relative z-20 h-full flex flex-col justify-center px-4 md:px-12 max-w-4xl">
-            <div class="flex items-center gap-3 mb-4">
-                <span class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-3 py-1 rounded text-xs font-black uppercase tracking-wider shadow-lg">Top 10</span>
-                <span class="text-red-500 font-bold tracking-widest text-sm uppercase">Aujourd'hui</span>
-            </div>
-            <h2 class="brand-font text-6xl md:text-8xl lg:text-9xl mb-6 leading-none text-white drop-shadow-2xl">
-                STREAMING<br>PREMIUM
-            </h2>
-            <p class="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl leading-relaxed drop-shadow-lg">
-                Découvrez des collections exclusives, des séries complètes et des films en HD. 
-                Recherchez parmi toutes nos vidéos disponibles.
-            </p>
-            <div class="flex gap-4 flex-wrap">
-                <button onclick="scrollToSection('collections-container')" class="btn-netflix px-8 py-4 rounded-md font-bold text-lg flex items-center gap-2 hover:scale-105 transition-transform">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
-                    Explorer
-                </button>
-                <button onclick="toggleSearch(); document.getElementById('search-input').focus()" class="bg-gray-600/40 hover:bg-gray-600/60 backdrop-blur-md px-8 py-4 rounded-md font-bold text-lg flex items-center gap-2 transition-all">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    Rechercher
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Search Results Container (Hidden by default) -->
-    <div id="search-results-container" class="hidden px-4 md:px-12 py-8">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-2xl font-bold text-white">
-                Résultats de recherche: <span id="search-query" class="text-red-500"></span>
-                <span class="text-gray-500 text-lg ml-2" id="search-count"></span>
-            </h3>
-            <button onclick="clearSearch()" class="text-sm text-gray-400 hover:text-white transition-colors">
-                Effacer la recherche
-            </button>
-        </div>
-        <div id="search-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"></div>
-        <div id="no-results" class="hidden no-results rounded-2xl p-12 text-center">
-            <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <p class="text-xl text-gray-400 mb-2">Aucun résultat trouvé</p>
-            <p class="text-gray-600">Essayez avec d'autres mots-clés</p>
-        </div>
-    </div>
-
-    <!-- Loading State -->
-    <div id="loading" class="px-4 md:px-12 py-12">
-        <div class="h-8 w-64 shimmer rounded mb-8"></div>
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            <div class="aspect-video shimmer rounded-lg"></div>
-            <div class="aspect-video shimmer rounded-lg"></div>
-            <div class="aspect-video shimmer rounded-lg"></div>
-            <div class="aspect-video shimmer rounded-lg"></div>
-            <div class="aspect-video shimmer rounded-lg hidden lg:block"></div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <main id="content" class="hidden space-y-16 pb-20">
-        
-        <!-- Auto-detected Collections -->
-        <div id="collections-container" class="space-y-12">
-            <!-- Collections will be injected here dynamically -->
-        </div>
-
-        <!-- All Videos Section -->
-        <section id="all-videos" class="px-4 md:px-12">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl md:text-2xl font-bold text-white hover:text-red-600 transition-colors cursor-pointer flex items-center gap-2" onclick="openInfoModal('Toutes les vidéos', '<p>Explorez notre catalogue complet de vidéos</p><p class=\'text-gray-400 mt-2\'>' + videos.length + ' vidéos disponibles</p>')">
-                    Toutes les vidéos
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                </h3>
-                <span class="text-gray-500 text-sm" id="total-count"></span>
-            </div>
-            <div id="all-videos-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"></div>
-        </section>
-
-    </main>
-
-    <!-- Video Modal -->
-    <div id="video-modal" class="fixed inset-0 z-[100] hidden bg-black/95 backdrop-blur-sm overflow-y-auto">
-        <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="modal-enter w-full max-w-6xl bg-[#181818] rounded-2xl overflow-hidden shadow-2xl border border-gray-800">
-                <div class="relative aspect-video bg-black group">
-                    <iframe id="modal-iframe" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay"></iframe>
-                    <button onclick="closeModal()" class="absolute top-4 right-4 w-10 h-10 bg-black/60 hover:bg-black/90 rounded-full flex items-center justify-center transition-colors z-10 border border-white/20">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            
+            <div class="flex items-center gap-4">
+                <!-- Search Bar -->
+                <div class="search-container flex items-center bg-black/40 rounded-full px-3 py-2 border border-transparent hover:border-gray-600 transition-all" id="search-container">
+                    <button onclick="toggleSearch()" class="p-1 hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </button>
-                    <div id="modal-collection-badge" class="absolute top-4 left-4 px-3 py-1 rounded text-xs font-bold hidden" style="background: var(--badge-color, #e50914); color: white;">
-                        COLLECTION
-                    </div>
+                    <input type="text" id="search-input" class="search-input bg-transparent border-none outline-none text-white placeholder-gray-400 ml-2 text-sm" placeholder="Titres, collections..." oninput="handleSearch(this.value)" onkeydown="if(event.key==='Escape')closeSearch()">
+                    <button onclick="clearSearch()" id="clear-search" class="hidden p-1 hover:text-white">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
-                
-                <div class="p-6 md:p-8">
-                    <div class="flex flex-col md:flex-row gap-6">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-4 text-sm text-gray-400 flex-wrap">
-                                <span class="text-green-400 font-bold text-base">98% Match</span>
-                                <span class="border border-gray-600 px-1 rounded text-xs">HD</span>
-                                <span class="border border-gray-600 px-1 rounded text-xs">5.1</span>
-                                <span id="modal-meta" class="font-semibold"></span>
-                            </div>
-                            <h2 id="modal-title" class="text-3xl md:text-4xl font-bold mb-4 text-white">Titre</h2>
-                            <p class="text-gray-300 leading-relaxed mb-6 text-lg">
-                                Profitez de cette vidéo en haute qualité. Streaming optimisé pour la meilleure expérience visuelle.
-                            </p>
-                            <div class="flex gap-4 flex-wrap">
-                                <button onclick="replayVideo()" class="btn-netflix px-8 py-3 rounded-md font-bold flex items-center gap-2 hover:scale-105 transition-transform">
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
-                                    Lecture
-                                </button>
-                                <button class="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-md font-bold flex items-center gap-2 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                    Ma Liste
-                                </button>
-                                <button onclick="shareVideo()" class="border border-gray-600 hover:bg-white/10 px-6 py-3 rounded-md font-bold flex items-center gap-2 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
-                                    Partager
-                                </button>
-                            </div>
+
+                <!-- Notifications -->
+                <button class="p-2 hover:bg-white/10 rounded-full transition-colors relative">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    <span class="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full"></span>
+                </button>
+
+                <!-- Profile Menu with Logout Functionality -->
+                <div class="profile-container relative">
+                    <button class="flex items-center gap-2 group" onclick="toggleProfile()">
+                        <div class="w-8 h-8 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center text-xs font-bold border-2 border-transparent group-hover:border-white transition-all">
+                            TU
                         </div>
-                        <div class="md:w-1/3 space-y-4 text-sm bg-gray-800/50 p-6 rounded-xl border border-gray-700">
-                            <div>
-                                <span class="text-gray-500 block mb-1">Titre original:</span>
-                                <span id="modal-original-title" class="text-white font-semibold text-lg"></span>
-                            </div>
-                            <div id="modal-collection-name" class="hidden">
-                                <span class="text-gray-500 block mb-1">Collection:</span>
-                                <span class="text-white font-semibold" id="modal-collection-text"></span>
-                            </div>
-                            <div>
-                                <span class="text-gray-500 block mb-1">Genres:</span>
-                                <span class="text-gray-300">Drame, Comédie, Tunisien</span>
-                            </div>
-                            <div>
-                                <span class="text-gray-500 block mb-1">Qualité:</span>
-                                <span class="text-gray-300">HD 1080p • Stereo 2.0</span>
-                            </div>
+                        <svg class="w-4 h-4 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="profile-dropdown absolute right-0 top-full mt-2 w-56 bg-black/95 border border-gray-700 rounded-lg shadow-2xl py-2 backdrop-blur-md z-50">
+                        <div class="px-4 py-3 border-b border-gray-800">
+                            <p class="font-bold text-white">Membre Premium</p>
+                            <p class="text-xs text-gray-400">Accès illimité</p>
+                        </div>
+                        <a href="#" class="block px-4 py-2 hover:bg-white/10 transition-colors text-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            Mon profil
+                        </a>
+                        <a href="#" class="block px-4 py-2 hover:bg-white/10 transition-colors text-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            Paramètres
+                        </a>
+                        <a href="#" class="block px-4 py-2 hover:bg-white/10 transition-colors text-sm flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            Confidentialité
+                        </a>
+                        <div class="border-t border-gray-800 mt-2 pt-2">
+                            <a href="#" onclick="logout()" class="block px-4 py-2 hover:bg-white/10 transition-colors text-sm text-red-400 hover:text-red-300 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                Déconnexion
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </nav>
 
-    <!-- Info Modal -->
-    <div id="info-modal" class="fixed inset-0 z-[200] hidden bg-black/95 backdrop-blur-sm overflow-y-auto">
-        <div class="min-h-screen flex items-center justify-center p-4">
-            <div class="modal-enter info-modal w-full max-w-2xl bg-[#181818] rounded-2xl overflow-hidden shadow-2xl border border-gray-800">
-                <div class="p-8">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 id="info-modal-title" class="text-3xl font-bold text-white">Titre</h2>
-                        <button onclick="closeInfoModal()" class="w-10 h-10 bg-black/60 hover:bg-black/90 rounded-full flex items-center justify-center transition-colors border border-white/20">
+        <!-- Hero Section -->
+        <header class="relative h-[85vh] w-full overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10"></div>
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2525&auto=format&fit=crop')] bg-cover bg-center"></div>
+            <div class="hero-gradient absolute inset-0 z-10"></div>
+            
+            <div class="relative z-20 h-full flex flex-col justify-center px-4 md:px-12 max-w-4xl">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-3 py-1 rounded text-xs font-black uppercase tracking-wider shadow-lg">Top 10</span>
+                    <span class="text-red-500 font-bold tracking-widest text-sm uppercase">Aujourd'hui</span>
+                </div>
+                <h2 class="brand-font text-6xl md:text-8xl lg:text-9xl mb-6 leading-none text-white drop-shadow-2xl">
+                    STREAMING<br>PREMIUM
+                </h2>
+                <p class="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl leading-relaxed drop-shadow-lg">
+                    Découvrez des collections exclusives, des séries complètes et des films en HD. 
+                    Utilisez le menu latéral pour naviguer entre vos séries.
+                </p>
+                <div class="flex gap-4 flex-wrap">
+                    <button onclick="scrollToSection('collections-container')" class="btn-netflix px-8 py-4 rounded-md font-bold text-lg flex items-center gap-2 hover:scale-105 transition-transform">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
+                        Explorer
+                    </button>
+                    <button onclick="toggleSidebar()" class="bg-gray-600/40 hover:bg-gray-600/60 backdrop-blur-md px-8 py-4 rounded-md font-bold text-lg flex items-center gap-2 transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                        Voir les séries
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search Results Container (Hidden by default) -->
+        <div id="search-results-container" class="hidden px-4 md:px-12 py-8">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-white">
+                    Résultats de recherche: <span id="search-query" class="text-red-500"></span>
+                    <span class="text-gray-500 text-lg ml-2" id="search-count"></span>
+                </h3>
+                <button onclick="clearSearch()" class="text-sm text-gray-400 hover:text-white transition-colors">
+                    Effacer la recherche
+                </button>
+            </div>
+            <div id="search-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"></div>
+            <div id="no-results" class="hidden no-results rounded-2xl p-12 text-center">
+                <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <p class="text-xl text-gray-400 mb-2">Aucun résultat trouvé</p>
+                <p class="text-gray-600">Essayez avec d'autres mots-clés</p>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="px-4 md:px-12 py-12">
+            <div class="h-8 w-64 shimmer rounded mb-8"></div>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div class="aspect-video shimmer rounded-lg"></div>
+                <div class="aspect-video shimmer rounded-lg"></div>
+                <div class="aspect-video shimmer rounded-lg"></div>
+                <div class="aspect-video shimmer rounded-lg"></div>
+                <div class="aspect-video shimmer rounded-lg hidden lg:block"></div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main id="content" class="hidden space-y-16 pb-20">
+            
+            <!-- Auto-detected Collections -->
+            <div id="collections-container" class="space-y-12">
+                <!-- Collections will be injected here dynamically -->
+            </div>
+
+            <!-- All Videos Section -->
+            <section id="all-videos" class="px-4 md:px-12">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl md:text-2xl font-bold text-white hover:text-red-600 transition-colors cursor-pointer flex items-center gap-2">
+                        Toutes les vidéos
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </h3>
+                    <span class="text-gray-500 text-sm" id="total-count"></span>
+                </div>
+                <div id="all-videos-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"></div>
+            </section>
+
+        </main>
+
+        <!-- Video Modal -->
+        <div id="video-modal" class="fixed inset-0 z-[100] hidden bg-black/95 backdrop-blur-sm overflow-y-auto">
+            <div class="min-h-screen flex items-center justify-center p-4">
+                <div class="modal-enter w-full max-w-6xl bg-[#181818] rounded-2xl overflow-hidden shadow-2xl border border-gray-800">
+                    <div class="relative aspect-video bg-black group">
+                        <iframe id="modal-iframe" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                        <button onclick="closeModal()" class="absolute top-4 right-4 w-10 h-10 bg-black/60 hover:bg-black/90 rounded-full flex items-center justify-center transition-colors z-10 border border-white/20">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                         </button>
+                        <div id="modal-collection-badge" class="absolute top-4 left-4 px-3 py-1 rounded text-xs font-bold hidden" style="background: var(--badge-color, #e50914); color: white;">
+                            COLLECTION
+                        </div>
                     </div>
-                    <div id="info-modal-content" class="text-gray-300 leading-relaxed text-lg">
-                        <!-- Contenu dynamique -->
-                    </div>
-                    <div class="mt-8 flex justify-end">
-                        <button onclick="closeInfoModal()" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-bold transition-colors">
-                            Fermer
-                        </button>
+                    
+                    <div class="p-6 md:p-8">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-4 text-sm text-gray-400 flex-wrap">
+                                    <span class="text-green-400 font-bold text-base">98% Match</span>
+                                    <span class="border border-gray-600 px-1 rounded text-xs">HD</span>
+                                    <span class="border border-gray-600 px-1 rounded text-xs">5.1</span>
+                                    <span id="modal-meta" class="font-semibold"></span>
+                                </div>
+                                <h2 id="modal-title" class="text-3xl md:text-4xl font-bold mb-4 text-white">Titre</h2>
+                                <p class="text-gray-300 leading-relaxed mb-6 text-lg">
+                                    Profitez de cette vidéo en haute qualité. Streaming optimisé pour la meilleure expérience visuelle.
+                                </p>
+                                <div class="flex gap-4 flex-wrap">
+                                    <button onclick="replayVideo()" class="btn-netflix px-8 py-3 rounded-md font-bold flex items-center gap-2 hover:scale-105 transition-transform">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path></svg>
+                                        Lecture
+                                    </button>
+                                    <button class="bg-gray-700 hover:bg-gray-600 px-6 py-3 rounded-md font-bold flex items-center gap-2 transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                        Ma Liste
+                                    </button>
+                                    <button onclick="shareVideo()" class="border border-gray-600 hover:bg-white/10 px-6 py-3 rounded-md font-bold flex items-center gap-2 transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                                        Partager
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="md:w-1/3 space-y-4 text-sm bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+                                <div>
+                                    <span class="text-gray-500 block mb-1">Titre original:</span>
+                                    <span id="modal-original-title" class="text-white font-semibold text-lg"></span>
+                                </div>
+                                <div id="modal-collection-name" class="hidden">
+                                    <span class="text-gray-500 block mb-1">Collection:</span>
+                                    <span class="text-white font-semibold" id="modal-collection-text"></span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500 block mb-1">Genres:</span>
+                                    <span class="text-gray-300">Drame, Comédie, Tunisien</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500 block mb-1">Qualité:</span>
+                                    <span class="text-gray-300">HD 1080p • Stereo 2.0</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Footer with Snapchat Link in the middle -->
+        <footer class="mt-20 px-4 md:px-12 py-12 border-t border-gray-800 text-gray-500 text-sm bg-black">
+            <div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+                <div class="space-y-3">
+                    <p class="hover:text-white transition-colors cursor-pointer">Audio Description</p>
+                    <p class="hover:text-white transition-colors cursor-pointer">Relations Investisseurs</p>
+                    <p class="hover:text-white transition-colors cursor-pointer">Informations légales</p>
+                </div>
+                <div class="space-y-3">
+                    <p class="hover:text-white transition-colors cursor-pointer">Centre d'aide</p>
+                    <p class="hover:text-white transition-colors cursor-pointer">Recrutement</p>
+                    <p class="hover:text-white transition-colors cursor-pointer">Préférences de cookies</p>
+                </div>
+                <div class="space-y-3">
+                    <p class="hover:text-white transition-colors cursor-pointer">Cartes cadeaux</p>
+                    <p class="hover:text-white transition-colors cursor-pointer">Conditions d'utilisation</p>
+                    <p class="hover:text-white transition-colors cursor-pointer">Mentions légales</p>
+                </div>
+                <div class="space-y-3">
+                    <p class="hover:text-white transition-colors cursor-pointer">Presse</p>
+                    <p class="hover:text-white transition-colors cursor-pointer">Confidentialité</p>
+                    <p class="hover:text-white transition-colors cursor-pointer">Nous contacter</p>
+                </div>
+            </div>
+            
+            <!-- Snapchat Link Centered -->
+            <div class="flex justify-center mb-8">
+                <a href="https://www.snapchat.com/add/h7_06200?share_id=u_T56Mv5TmOcaZ8QpB6lZw&locale=fr_FR" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   class="snapchat-footer-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12.206 22.924c-.423 0-.815-.029-1.178-.086-.223-.036-.468-.122-.639-.168a3.13 3.13 0 0 0-.418-.088c-.327-.038-.643.008-.969.082-.416.096-.824.274-1.244.313-.707.066-1.378-.123-1.97-.521-.416-.279-.745-.648-1.008-1.06-.305-.478-.51-1.006-.642-1.557-.096-.404-.12-.82-.175-1.231-.035-.262-.11-.516-.199-.765-.242-.684-.705-1.163-1.348-1.521-.785-.435-1.667-.585-2.55-.439-.291.048-.572.12-.853.122-.334.002-.586-.125-.734-.396-.165-.299-.103-.623.145-.945.304-.393.703-.692 1.143-.926.844-.447 1.765-.714 2.682-.924.446-.102.559-.181.65-.617.036-.177.051-.358.077-.537.152-1.079.097-2.122-.34-3.147-.647-1.519-2.087-2.499-3.78-2.49-.496.003-.977.1-1.43.271-.551.209-1.022.509-1.362.93-.259.321-.336.682-.177.986.148.282.464.441.891.441.244 0 .505-.055.759-.126.623-.174 1.004-.063 1.245.315.205.322.178.73-.044 1.089-.223.362-.527.649-.903.874-.763.455-1.609.72-2.472.882-.32.06-.525.324-.527.604-.005.707.148 1.358.479 1.953.567 1.018 1.466 1.691 2.67 1.954.168.036.336.064.506.097.014.003.028.015.048.03.162.122.084.314.073.497-.024.445-.108.88-.258 1.301-.207.582-.493 1.126-.829 1.64-.272.414-.596.786-.974 1.102-.315.264-.66.476-1.036.631-.583.238-1.178.38-1.798.45-.406.045-.826.019-1.234-.032-.269-.034-.462-.226-.462-.464 0-.096.037-.194.103-.277.202-.252.49-.395.813-.449.336-.056.683-.008 1.022.07.257.06.515.142.777.149.459.011.789-.274.773-.646-.006-.131-.051-.263-.143-.378-.19-.235-.522-.334-.884-.341-.304-.006-.61.065-.907.171-.276.099-.539.231-.81.315-.357.111-.714.149-1.023.053-.339-.105-.547-.399-.529-.732.017-.307.257-.556.584-.664.449-.149.907-.245 1.365-.329.896-.165 1.787-.35 2.638-.655.297-.106.59-.223.865-.367.74-.389 1.223-.941 1.419-1.762.087-.367.09-.743.068-1.118-.019-.311.017-.625.07-.934.061-.36.159-.711.277-1.055.157-.459.372-.898.613-1.319.097-.168.206-.332.299-.504.036-.065.014-.137-.018-.215-.119-.283-.375-.425-.727-.45-.344-.024-.654.117-.967.266-.431.204-.828.468-1.228.73-.184.12-.381.221-.567.332-.144.087-.292.151-.454.191-.188.047-.353-.036-.427-.18-.074-.141-.035-.314.071-.474.155-.233.359-.42.582-.588.589-.441 1.229-.797 1.934-1.026.419-.136.851-.229 1.291-.285.553-.071 1.102-.054 1.649.043.701.125 1.352.402 1.946.797.323.215.622.464.902.73.183.175.355.36.519.552.248.291.459.606.628.942.371.736.558 1.506.566 2.318.012 1.236-.274 2.406-1.029 3.438-.165.225-.358.431-.539.644-.115.136-.236.269-.323.425-.199.358-.072.723.137.952.218.237.56.34.916.32.379-.021.734-.159 1.079-.302.592-.245 1.165-.537 1.708-.874.385-.238.754-.501 1.097-.792.329-.279.63-.586.892-.923.181-.234.342-.482.479-.74.098-.183.225-.352.37-.507.146-.157.367-.181.523-.061.171.132.206.389.104.63-.131.309-.317.586-.527.842-.303.366-.645.694-1.016.986-.487.383-1.014.705-1.574.959-.573.259-1.166.447-1.781.56-.426.078-.862.108-1.296.097z"/>
+                    </svg>
+                    <span>Rejoignez-moi sur Snapchat</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="text-center pt-8 border-t border-gray-800">
+                <p class="brand-font text-2xl text-gray-600 mb-2">TUNFLIX</p>
+                <p>&copy; 2024 TUNFLIX. Tous droits réservés.</p>
+            </div>
+        </footer>
     </div>
-
-    <!-- Footer with all clickable links -->
-    <footer class="mt-20 px-4 md:px-12 py-12 border-t border-gray-800 text-gray-500 text-sm bg-black">
-        <div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-            <div class="space-y-3">
-                <p onclick="openInfoModal('Audio Description', infoContents['audio'])" class="footer-link hover:text-white transition-colors cursor-pointer">Audio Description</p>
-                <p onclick="openInfoModal('Relations Investisseurs', infoContents['investisseurs'])" class="footer-link hover:text-white transition-colors cursor-pointer">Relations Investisseurs</p>
-                <p onclick="openInfoModal('Informations légales', infoContents['legal'])" class="footer-link hover:text-white transition-colors cursor-pointer">Informations légales</p>
-            </div>
-            <div class="space-y-3">
-                <p onclick="openInfoModal('Centre d\'aide', infoContents['aide'])" class="footer-link hover:text-white transition-colors cursor-pointer">Centre d'aide</p>
-                <p onclick="openInfoModal('Recrutement', infoContents['recrutement'])" class="footer-link hover:text-white transition-colors cursor-pointer">Recrutement</p>
-                <p onclick="openInfoModal('Préférences de cookies', infoContents['cookies'])" class="footer-link hover:text-white transition-colors cursor-pointer">Préférences de cookies</p>
-            </div>
-            <div class="space-y-3">
-                <p onclick="openInfoModal('Cartes cadeaux', infoContents['cadeaux'])" class="footer-link hover:text-white transition-colors cursor-pointer">Cartes cadeaux</p>
-                <p onclick="openInfoModal('Conditions d\'utilisation', infoContents['conditions'])" class="footer-link hover:text-white transition-colors cursor-pointer">Conditions d'utilisation</p>
-                <p onclick="openInfoModal('Mentions légales', infoContents['mentions'])" class="footer-link hover:text-white transition-colors cursor-pointer">Mentions légales</p>
-            </div>
-            <div class="space-y-3">
-                <p onclick="openInfoModal('Presse', infoContents['presse'])" class="footer-link hover:text-white transition-colors cursor-pointer">Presse</p>
-                <p onclick="openInfoModal('Confidentialité', infoContents['confidentialite'])" class="footer-link hover:text-white transition-colors cursor-pointer">Confidentialité</p>
-                <p onclick="openInfoModal('Nous contacter', infoContents['contact'])" class="footer-link hover:text-white transition-colors cursor-pointer">Nous contacter</p>
-            </div>
-        </div>
-        
-        <!-- Snapchat Link Centered -->
-        <div class="flex justify-center mb-8">
-            <a href="https://www.snapchat.com/add/h7_06200?share_id=u_T56Mv5TmOcaZ8QpB6lZw&locale=fr_FR" 
-               target="_blank" 
-               rel="noopener noreferrer"
-               class="snapchat-footer-link">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12.206 22.924c-.423 0-.815-.029-1.178-.086-.223-.036-.468-.122-.639-.168a3.13 3.13 0 0 0-.418-.088c-.327-.038-.643.008-.969.082-.416.096-.824.274-1.244.313-.707.066-1.378-.123-1.97-.521-.416-.279-.745-.648-1.008-1.06-.305-.478-.51-1.006-.642-1.557-.096-.404-.12-.82-.175-1.231-.035-.262-.11-.516-.199-.765-.242-.684-.705-1.163-1.348-1.521-.785-.435-1.667-.585-2.55-.439-.291.048-.572.12-.853.122-.334.002-.586-.125-.734-.396-.165-.299-.103-.623.145-.945.304-.393.703-.692 1.143-.926.844-.447 1.765-.714 2.682-.924.446-.102.559-.181.65-.617.036-.177.051-.358.077-.537.152-1.079.097-2.122-.34-3.147-.647-1.519-2.087-2.499-3.78-2.49-.496.003-.977.1-1.43.271-.551.209-1.022.509-1.362.93-.259.321-.336.682-.177.986.148.282.464.441.891.441.244 0 .505-.055.759-.126.623-.174 1.004-.063 1.245.315.205.322.178.73-.044 1.089-.223.362-.527.649-.903.874-.763.455-1.609.72-2.472.882-.32.06-.525.324-.527.604-.005.707.148 1.358.479 1.953.567 1.018 1.466 1.691 2.67 1.954.168.036.336.064.506.097.014.003.028.015.048.03.162.122.084.314.073.497-.024.445-.108.88-.258 1.301-.207.582-.493 1.126-.829 1.64-.272.414-.596.786-.974 1.102-.315.264-.66.476-1.036.631-.583.238-1.178.38-1.798.45-.406.045-.826.019-1.234-.032-.269-.034-.462-.226-.462-.464 0-.096.037-.194.103-.277.202-.252.49-.395.813-.449.336-.056.683-.008 1.022.07.257.06.515.142.777.149.459.011.789-.274.773-.646-.006-.131-.051-.263-.143-.378-.19-.235-.522-.334-.884-.341-.304-.006-.61.065-.907.171-.276.099-.539.231-.81.315-.357.111-.714.149-1.023.053-.339-.105-.547-.399-.529-.732.017-.307.257-.556.584-.664.449-.149.907-.245 1.365-.329.896-.165 1.787-.35 2.638-.655.297-.106.59-.223.865-.367.74-.389 1.223-.941 1.419-1.762.087-.367.09-.743.068-1.118-.019-.311.017-.625.07-.934.061-.36.159-.711.277-1.055.157-.459.372-.898.613-1.319.097-.168.206-.332.299-.504.036-.065.014-.137-.018-.215-.119-.283-.375-.425-.727-.45-.344-.024-.654.117-.967.266-.431.204-.828.468-1.228.73-.184.12-.381.221-.567.332-.144.087-.292.151-.454.191-.188.047-.353-.036-.427-.18-.074-.141-.035-.314.071-.474.155-.233.359-.42.582-.588.589-.441 1.229-.797 1.934-1.026.419-.136.851-.229 1.291-.285.553-.071 1.102-.054 1.649.043.701.125 1.352.402 1.946.797.323.215.622.464.902.73.183.175.355.36.519.552.248.291.459.606.628.942.371.736.558 1.506.566 2.318.012 1.236-.274 2.406-1.029 3.438-.165.225-.358.431-.539.644-.115.136-.236.269-.323.425-.199.358-.072.723.137.952.218.237.56.34.916.32.379-.021.734-.159 1.079-.302.592-.245 1.165-.537 1.708-.874.385-.238.754-.501 1.097-.792.329-.279.63-.586.892-.923.181-.234.342-.482.479-.74.098-.183.225-.352.37-.507.146-.157.367-.181.523-.061.171.132.206.389.104.63-.131.309-.317.586-.527.842-.303.366-.645.694-1.016.986-.487.383-1.014.705-1.574.959-.573.259-1.166.447-1.781.56-.426.078-.862.108-1.296.097z"/>
-                </svg>
-                <span>Rejoignez-moi sur Snapchat</span>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                </svg>
-            </a>
-        </div>
-
-        <div class="text-center pt-8 border-t border-gray-800">
-            <p class="brand-font text-2xl text-gray-600 mb-2">TUNFLIX</p>
-            <p>&copy; 2024 TUNFLIX. Tous droits réservés.</p>
-        </div>
-    </footer>
 
     <script>
         const API_URL = "https://api.dailymotion.com/user/tunflix-and-chill-tv/videos";
@@ -798,6 +662,60 @@
             'serie': '#ff6b6b',
             'film': '#4ecdc4'
         };
+
+        // SIDEBAR FUNCTIONS - NOUVEAU
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const toggle = document.getElementById('sidebar-toggle');
+            
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            
+            // Rotate icon
+            const icon = toggle.querySelector('svg');
+            if (sidebar.classList.contains('open')) {
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function populateSidebar(sortedCollections) {
+            const sidebarList = document.getElementById('sidebar-series-list');
+            sidebarList.innerHTML = '';
+            
+            sortedCollections.forEach(([name, data], index) => {
+                const item = document.createElement('div');
+                item.className = 'series-item';
+                item.onclick = () => scrollToCollection(name);
+                item.innerHTML = `
+                    <div class="series-color" style="background: ${data.color}"></div>
+                    <div class="series-info">
+                        <div class="series-name">${name}</div>
+                        <div class="series-count">${data.videos.length} épisodes</div>
+                    </div>
+                `;
+                sidebarList.appendChild(item);
+            });
+        }
+
+        function scrollToCollection(collectionName) {
+            // Fermer la sidebar sur mobile
+            if (window.innerWidth < 1024) {
+                toggleSidebar();
+            }
+            
+            // Trouver l'élément de la collection
+            const element = document.getElementById(`collection-${collectionName.replace(/\s+/g, '-')}`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Highlight dans la sidebar
+                document.querySelectorAll('.series-item').forEach(item => item.classList.remove('active'));
+                event.currentTarget.classList.add('active');
+            }
+        }
 
         // Smart collection detection
         function detectCollections(videosList) {
@@ -1029,6 +947,10 @@
                 
                 renderAll();
                 
+                // Populate sidebar with collections - NOUVEAU
+                const sortedCollections = Object.entries(collections).sort((a, b) => b[1].videos.length - a[1].videos.length);
+                populateSidebar(sortedCollections);
+                
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('content').classList.remove('hidden');
                 
@@ -1051,11 +973,11 @@
             const sortedCollections = Object.entries(collections).sort((a, b) => b[1].videos.length - a[1].videos.length);
             
             collectionsContainer.innerHTML = sortedCollections.map(([name, data]) => `
-                <section class="collection-row py-6 px-4 md:px-12" style="--collection-color: ${data.color}; background: linear-gradient(90deg, ${data.color}10 0%, transparent 100%);">
+                <section id="collection-${name.replace(/\s+/g, '-')}" class="collection-row py-6 px-4 md:px-12" style="--collection-color: ${data.color}; background: linear-gradient(90deg, ${data.color}10 0%, transparent 100%);">
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center gap-3">
                             <h3 class="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
-                                <span class="collection-badge px-3 py-1 rounded text-sm" style="background: ${data.color}; color: ${data.color === '#FFD700' ? '#000' : '#fff'};" onclick="openInfoModal('Collection ${name}', '<p>Collection exclusive de ${name}</p><p>${data.videos.length} épisodes disponibles</p>')">
+                                <span class="collection-badge px-3 py-1 rounded text-sm" style="background: ${data.color}; color: ${data.color === '#FFD700' ? '#000' : '#fff'};">
                                     ${data.type === 'special' ? '★ ' : ''}${name}
                                 </span>
                                 <span class="text-gray-400 text-base font-normal">${data.videos.length} épisodes</span>
@@ -1229,17 +1151,11 @@
             if (e.target === e.currentTarget) closeModal();
         });
 
-        document.getElementById('info-modal').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) closeInfoModal();
-        });
-
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 if (currentVideoId) closeModal();
                 else if (!document.getElementById('search-results-container').classList.contains('hidden')) {
                     clearSearch();
-                } else if (!document.getElementById('info-modal').classList.contains('hidden')) {
-                    closeInfoModal();
                 }
             }
         });
